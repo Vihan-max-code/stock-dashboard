@@ -15,7 +15,7 @@
  * in a short window without a paid key.
  */
 
-import { writeFile, mkdir } from "node:fs/promises";
+import { writeFile, mkdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -24,6 +24,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const TICKERS = ["AAPL", "MSFT", "NVDA", "GOOGL", "AMZN", "META", "JPM", "UNH", "XOM", "TSLA", "KO", "WMT"];
 const API_KEY = process.env.ALPHAVANTAGE_API_KEY;
 const DELAY_MS = 13000;
+const MAX_HISTORY_DAYS = 400; // ~18 months of weekdays — plenty for sparklines/streaks, keeps the file small
 
 if (!API_KEY) {
   console.error("Missing ALPHAVANTAGE_API_KEY environment variable.");
@@ -58,6 +59,14 @@ async function fetchQuote(ticker) {
   return { price, changePercent: Number.isFinite(changePercent) ? changePercent : null };
 }
 
+async function readJsonSafe(filePath, fallback) {
+  try {
+    return JSON.parse(await readFile(filePath, "utf8"));
+  } catch {
+    return fallback;
+  }
+}
+
 async function main() {
   const quotes = {};
   const errors = {};
@@ -74,18 +83,35 @@ async function main() {
     if (i < TICKERS.length - 1) await sleep(DELAY_MS);
   }
 
+  const generatedAt = new Date().toISOString();
+  const today = generatedAt.slice(0, 10); // YYYY-MM-DD, UTC
+
   const output = {
-    generatedAt: new Date().toISOString(),
+    generatedAt,
     quotes,
     ...(Object.keys(errors).length ? { errors } : {}),
   };
 
-  const outPath = path.join(__dirname, "..", "data", "prices.json");
-  await mkdir(path.dirname(outPath), { recursive: true });
-  await writeFile(outPath, JSON.stringify(output, null, 2) + "\n");
+  const dataDir = path.join(__dirname, "..", "data");
+  await mkdir(dataDir, { recursive: true });
+
+  // Today's snapshot — same as before, unchanged behavior for anything reading prices.json.
+  const pricesPath = path.join(dataDir, "prices.json");
+  await writeFile(pricesPath, JSON.stringify(output, null, 2) + "\n");
+
+  // Running history — this is the new part. One entry per day, keyed by date.
+  // Re-running on the same day replaces that day's entry rather than duplicating it.
+  const historyPath = path.join(dataDir, "history.json");
+  const history = await readJsonSafe(historyPath, []);
+  const withoutToday = history.filter((entry) => entry.date !== today);
+  const updatedHistory = [...withoutToday, { date: today, quotes }]
+    .sort((a, b) => (a.date < b.date ? -1 : 1))
+    .slice(-MAX_HISTORY_DAYS);
+  await writeFile(historyPath, JSON.stringify(updatedHistory, null, 2) + "\n");
 
   const okCount = Object.keys(quotes).length;
   console.log(`\nWrote data/prices.json — ${okCount}/${TICKERS.length} quotes succeeded.`);
+  console.log(`Wrote data/history.json — ${updatedHistory.length} day(s) of history tracked.`);
 
   if (okCount === 0) {
     console.error("No quotes succeeded — failing the run so the workflow shows red.");
@@ -97,3 +123,4 @@ main().catch((err) => {
   console.error("Fatal error:", err);
   process.exit(1);
 });
+
