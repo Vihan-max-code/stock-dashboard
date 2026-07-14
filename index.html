@@ -100,6 +100,11 @@
   .dd-stat-value { font-family: 'IBM Plex Mono', monospace; font-size: 17px; font-weight: 600; margin-top: 3px; }
   .dd-stat-delta { font-size: 12px; margin-top: 2px; }
 
+  .spark-section { margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--border); }
+  .spark-svg { width: 100%; height: 60px; display: block; }
+  .spark-caption { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text-dim); margin-top: 6px; }
+  .spark-empty { font-size: 12.5px; color: var(--text-dim); font-style: italic; padding: 10px 0; }
+
   footer { border-top: 1px solid var(--border); padding: 36px 0; }
   .foot-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; font-size: 12.5px; color: var(--text-dim); line-height: 1.6; }
 
@@ -189,7 +194,7 @@
 
 <footer>
   <div class="wrap foot-grid">
-    <div><strong style="color:var(--text)">Methodology.</strong> Twelve large, widely-held US companies were selected by hand to span major sectors — a curated sample, not the full market. Historical prices are annual closes; "10-yr CAGR" runs 2015 close → 2025 close; "volatility" is the standard deviation of annual returns 2016–2025. The July 2026 snapshot was retrieved from Macrotrends. Live prices, when available, come from Alpha Vantage via an automated daily job — see <span class="mono">data/prices.json</span> and the "Update stock prices" GitHub Action in this repo.</div>
+    <div><strong style="color:var(--text)">Methodology.</strong> Twelve large, widely-held US companies were selected by hand to span major sectors — a curated sample, not the full market. Historical prices are annual closes; "10-yr CAGR" runs 2015 close → 2025 close; "volatility" is the standard deviation of annual returns 2016–2025. The July 2026 snapshot was retrieved from Macrotrends. Live prices, when available, come from Alpha Vantage via an automated daily job — see <span class="mono">data/prices.json</span> for today's snapshot, <span class="mono">data/history.json</span> for the running day-by-day log this page has collected since going live, and the "Update stock prices" GitHub Action in this repo.</div>
     <div><strong style="color:var(--text)">Not financial advice.</strong> Everything here describes what already happened. Past performance is not indicative of future results. High historical growth (NVDA, TSLA) came with equally large drawdowns. Consider your own goals and risk tolerance, and speak with a licensed financial advisor before making investment decisions.</div>
   </div>
 </footer>
@@ -258,11 +263,13 @@ const SECTOR_GROUPS = Object.values(ENRICHED.reduce((acc,s)=>{
 })).sort((a,b)=>b.avgCagr-a.avgCagr);
 
 /* ---------------------------------------------------------------------
-   LIVE PRICES — fetched from data/prices.json, updated daily by
+   LIVE PRICES — fetched from data/prices.json (today's snapshot) and
+   data/history.json (running daily log), both updated by
    .github/workflows/update-prices.yml via scripts/update-prices.mjs.
 --------------------------------------------------------------------- */
 let liveQuotes = {};
 let liveMeta = { generatedAt: null };
+let liveHistory = []; // [{ date: "YYYY-MM-DD", quotes: { TICKER: {price, changePercent} } }, ...] oldest first
 
 async function loadLivePrices() {
   const statusEl = document.getElementById("liveStatus");
@@ -273,9 +280,26 @@ async function loadLivePrices() {
     liveQuotes = json.quotes || {};
     liveMeta.generatedAt = json.generatedAt || null;
 
+    let historyNote = "";
+    try {
+      const histRes = await fetch("data/history.json?t=" + Date.now());
+      if (histRes.ok) {
+        liveHistory = await histRes.json();
+        if (Array.isArray(liveHistory) && liveHistory.length) {
+          const span = liveHistory.length === 1
+            ? "1 day tracked so far"
+            : `${liveHistory.length} trading days tracked since ${liveHistory[0].date}`;
+          historyNote = ` · ${span}`;
+        }
+      }
+    } catch {
+      // history is a bonus feature — a failure here shouldn't block the rest of the page
+      liveHistory = [];
+    }
+
     if (Object.keys(liveQuotes).length && liveMeta.generatedAt) {
       const d = new Date(liveMeta.generatedAt);
-      statusEl.innerHTML = `<span class="live-dot on"></span><span>Live — prices as of ${d.toLocaleString()}</span>`;
+      statusEl.innerHTML = `<span class="live-dot on"></span><span>Live — prices as of ${d.toLocaleString()}${historyNote}</span>`;
     } else {
       statusEl.innerHTML = `<span class="live-dot off"></span><span>No live data yet — showing the July 2026 snapshot (first automated update runs on the next scheduled job)</span>`;
     }
@@ -427,6 +451,34 @@ document.querySelectorAll("th[data-key]").forEach(th => {
 --------------------------------------------------------------------- */
 let selectedTicker = "NVDA";
 
+function buildSparkline(ticker) {
+  const points = liveHistory
+    .map(day => ({ date: day.date, price: day.quotes[ticker] && day.quotes[ticker].price }))
+    .filter(p => p.price != null);
+
+  if (points.length < 2) {
+    return `<div class="spark-empty">${points.length === 1 ? "1 day tracked so far — a trend line will appear once there's more history." : "No live tracking history yet."}</div>`;
+  }
+
+  const W = 460, H = 60, pad = 4;
+  const prices = points.map(p => p.price);
+  const min = Math.min(...prices), max = Math.max(...prices);
+  const range = max - min || 1;
+  const x = i => pad + (i / (points.length - 1)) * (W - pad * 2);
+  const y = v => H - pad - ((v - min) / range) * (H - pad * 2);
+  const d = points.map((p, i) => `${i === 0 ? "M" : "L"} ${x(i)} ${y(p.price)}`).join(" ");
+  const trendUp = points[points.length - 1].price >= points[0].price;
+
+  return `
+    <div class="spark-wrap">
+      <svg viewBox="0 0 ${W} ${H}" class="spark-svg">
+        <path d="${d}" fill="none" stroke="${trendUp ? "var(--teal)" : "var(--rust)"}" stroke-width="2" />
+        <circle cx="${x(points.length - 1)}" cy="${y(points[points.length - 1].price)}" r="3" fill="${trendUp ? "var(--teal)" : "var(--rust)"}" />
+      </svg>
+      <div class="spark-caption">${points[0].date} → ${points[points.length - 1].date} · $${points[0].price.toFixed(2)} → $${points[points.length - 1].price.toFixed(2)}</div>
+    </div>`;
+}
+
 function renderProfile() {
   const s = ENRICHED.find(e => e.ticker === selectedTicker);
 
@@ -465,6 +517,10 @@ function renderProfile() {
         ${live && live.changePercent!=null ? `<div class="dd-stat-delta" style="color:${live.changePercent>=0?'var(--teal)':'var(--rust)'}">${fmtPct(live.changePercent)} today</div>` : ""}
       </div>
       <div><div class="dd-stat-label">Market cap</div><div class="dd-stat-value">$${s.marketCap.toLocaleString()}B</div></div>
+    </div>
+    <div class="spark-section">
+      <div class="dd-stat-label" style="margin-bottom:8px;">Live tracking — since we started logging</div>
+      ${buildSparkline(s.ticker)}
     </div>`;
 }
 
