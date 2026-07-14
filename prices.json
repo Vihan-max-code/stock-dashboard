@@ -1,0 +1,5 @@
+{
+  "generatedAt": null,
+  "quotes": {},
+  "note": "This file is overwritten automatically by .github/workflows/update-prices.yml. Until the first scheduled run completes, the page falls back to the static July 2026 snapshot baked into index.html."
+}
