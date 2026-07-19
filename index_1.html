@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>A Decade on Wall Street</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0B1120;
+    --surface: #121B2E;
+    --surface2: #182338;
+    --border: rgba(232,230,222,0.09);
+    --text: #E9E6DD;
+    --text-dim: #93A0B8;
+    --teal: #2DD4BF;
+    --rust: #E4693C;
+    --gold: #D4A857;
+  }
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: 'Inter', sans-serif; margin: 0; padding-bottom: 4rem;
+  }
+  .mono { font-family: 'IBM Plex Mono', monospace; }
+
+  /* Ticker tape */
+  .tape-outer { overflow: hidden; border-bottom: 1px solid var(--border); background: #0D1526; white-space: nowrap; padding: 10px 0; }
+  .tape-track { display: inline-flex; animation: scrollTape 46s linear infinite; }
+  @keyframes scrollTape { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+  .tape-item { display: inline-flex; align-items: center; gap: 8px; padding: 0 18px; font-family: 'IBM Plex Mono', monospace; font-size: 13px; letter-spacing: 0.02em; }
+  .tape-ticker { color: var(--text-dim); font-weight: 500; }
+  .tape-price { color: var(--text); font-weight: 600; }
+  .tape-val.up { color: var(--teal); }
+  .tape-val.down { color: var(--rust); }
+  .tape-val.muted { opacity: 0.65; }
+  .tape-dot { color: var(--border); margin-left: 10px; }
+  .live-pip { width: 5px; height: 5px; border-radius: 50%; background: var(--teal); animation: pulseDot 1.6s ease-in-out infinite; flex-shrink: 0; }
+  @keyframes pulseDot { 0%,100% { box-shadow: 0 0 0 0 rgba(45,212,191,0.5); } 50% { box-shadow: 0 0 0 5px rgba(45,212,191,0); } }
+
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 0 28px; }
+  .hero { padding: 64px 0 40px; }
+  .eyebrow { font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--gold); margin-bottom: 14px; }
+  h1.title { font-family: 'Fraunces', serif; font-size: clamp(2.2rem, 5vw, 3.6rem); font-weight: 600; line-height: 1.05; margin: 0 0 20px; max-width: 760px; }
+  .lede { font-size: 17px; line-height: 1.6; color: var(--text-dim); max-width: 640px; margin: 0 0 24px; }
+  .chip { display: inline-flex; align-items: flex-start; gap: 8px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 12px 16px; font-size: 13px; color: var(--text-dim); max-width: 640px; line-height: 1.5; }
+
+  .live-status { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 18px 0 0; font-family: 'IBM Plex Mono', monospace; font-size: 12.5px; color: var(--text-dim); }
+  .live-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--teal); flex-shrink: 0; }
+  .live-dot.on { animation: pulseDot 1.6s ease-in-out infinite; }
+  .live-dot.off { background: var(--text-dim); }
+
+  section { padding: 48px 0; border-top: 1px solid var(--border); }
+  .section-head { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 28px; flex-wrap: wrap; gap: 12px; }
+  h2.section-title { font-family: 'Fraunces', serif; font-size: 28px; font-weight: 600; margin: 0; }
+  .section-sub { color: var(--text-dim); font-size: 14px; max-width: 480px; }
+
+  .stat-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 32px; }
+  .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 18px; }
+  .stat-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-dim); margin-bottom: 8px; }
+  .stat-value { font-family: 'IBM Plex Mono', monospace; font-size: 20px; font-weight: 600; }
+  .stat-sub { font-size: 13px; color: var(--text-dim); margin-top: 4px; }
+
+  .chart-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 24px; }
+  .legend-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+  .legend-pill { display: inline-flex; align-items: center; gap: 6px; font-family: 'IBM Plex Mono', monospace; font-size: 11.5px; padding: 5px 10px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface2); cursor: pointer; color: var(--text-dim); }
+  .legend-pill.active { color: var(--text); }
+  .legend-pill .sw { width: 8px; height: 8px; border-radius: 50%; }
+
+  .sector-list { display: flex; flex-direction: column; gap: 10px; }
+  .sector-row { display: grid; grid-template-columns: 160px 1fr 90px; align-items: center; gap: 14px; }
+  .sector-name { font-weight: 600; font-size: 14px; }
+  .sector-tickers { font-size: 11.5px; color: var(--text-dim); font-family: 'IBM Plex Mono', monospace; }
+  .sector-bar-track { background: var(--surface2); border-radius: 6px; height: 10px; overflow: hidden; }
+  .sector-bar-fill { height: 100%; border-radius: 6px; background: linear-gradient(90deg, var(--teal), #5EEAD4); }
+  .sector-cagr { font-family: 'IBM Plex Mono', monospace; font-size: 13px; text-align: right; color: var(--teal); font-weight: 600; }
+
+  table.screener { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  table.screener th { text-align: left; font-family: 'IBM Plex Mono', monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-dim); padding: 10px 12px; border-bottom: 1px solid var(--border); cursor: pointer; user-select: none; white-space: nowrap; }
+  table.screener th:hover { color: var(--text); }
+  table.screener td { padding: 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  table.screener tr.row:hover td { background: var(--surface2); cursor: pointer; }
+  .row-ticker { font-family: 'IBM Plex Mono', monospace; font-weight: 700; }
+  .row-name { color: var(--text-dim); font-size: 12px; }
+  .cell-num { font-family: 'IBM Plex Mono', monospace; text-align: right; }
+  .cell-num.up { color: var(--teal); }
+  .cell-num.down { color: var(--rust); }
+  .sector-tag { font-size: 11px; padding: 3px 8px; border-radius: 999px; background: var(--surface2); color: var(--text-dim); border: 1px solid var(--border); }
+
+  .deepdive-grid { display: grid; grid-template-columns: 1.1fr 1fr; gap: 28px; }
+  .ticker-pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 22px; }
+  .pill { font-family: 'IBM Plex Mono', monospace; font-size: 13px; font-weight: 600; padding: 7px 14px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface2); cursor: pointer; color: var(--text-dim); }
+  .pill.active { color: #0B1120; border-color: transparent; }
+  .dd-name { font-family: 'Fraunces', serif; font-size: 24px; margin: 0 0 4px; }
+  .dd-sub { color: var(--text-dim); font-size: 13px; margin-bottom: 18px; }
+  .dd-blurb { font-size: 14.5px; line-height: 1.65; margin-bottom: 22px; }
+  .dd-stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .dd-stat-label { font-size: 10.5px; text-transform: uppercase; letter-spacing: .06em; color: var(--text-dim); }
+  .dd-stat-value { font-family: 'IBM Plex Mono', monospace; font-size: 17px; font-weight: 600; margin-top: 3px; }
+  .dd-stat-delta { font-size: 12px; margin-top: 2px; }
+
+  .spark-section { margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--border); }
+  .spark-svg { width: 100%; height: 60px; display: block; }
+  .spark-caption { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text-dim); margin-top: 6px; }
+  .spark-empty { font-size: 12.5px; color: var(--text-dim); font-style: italic; padding: 10px 0; }
+
+  .mover-banner {
+    display: inline-flex; align-items: center; gap: 8px; margin-top: 12px;
+    font-family: 'IBM Plex Mono', monospace; font-size: 13px;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 999px;
+    padding: 7px 14px;
+  }
+  .mover-banner .mv-label { color: var(--text-dim); }
+  .mover-banner .mv-ticker { font-weight: 700; }
+
+  .pulse-empty { font-size: 13px; color: var(--text-dim); font-style: italic; padding: 4px 0; }
+  .pulse-grid { display: flex; flex-wrap: wrap; gap: 10px; }
+  .pulse-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--surface2); border: 1px solid var(--border); border-radius: 10px;
+    padding: 10px 14px; font-family: 'IBM Plex Mono', monospace; font-size: 13px;
+  }
+  .pulse-badge .pb-ticker { font-weight: 700; }
+  .pulse-badge .pb-streak.up { color: var(--teal); }
+  .pulse-badge .pb-streak.down { color: var(--rust); }
+
+  table.corr-table { border-collapse: collapse; font-family: 'IBM Plex Mono', monospace; font-size: 11.5px; }
+  table.corr-table th, table.corr-table td { padding: 7px 9px; text-align: center; white-space: nowrap; }
+  table.corr-table thead th { color: var(--text-dim); font-weight: 500; border-bottom: 1px solid var(--border); }
+  table.corr-table tbody th { color: var(--text-dim); font-weight: 500; text-align: left; border-right: 1px solid var(--border); }
+  table.corr-table td { color: var(--text); border-radius: 4px; }
+
+  .whatif-controls { display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-end; margin-bottom: 24px; }
+  .whatif-controls label { display: flex; flex-direction: column; gap: 6px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-dim); font-family: 'IBM Plex Mono', monospace; }
+  .whatif-controls input, .whatif-controls select {
+    background: var(--surface2); border: 1px solid var(--border); color: var(--text);
+    font-family: 'IBM Plex Mono', monospace; font-size: 14px; padding: 9px 12px; border-radius: 8px;
+    min-width: 140px;
+  }
+  .whatif-controls input:focus, .whatif-controls select:focus { outline: 1px solid var(--teal); }
+  .wi-headline { font-size: 14px; color: var(--text-dim); }
+  .wi-value { font-family: 'Fraunces', serif; font-size: 40px; font-weight: 600; margin: 6px 0; }
+  .wi-gain { font-family: 'IBM Plex Mono', monospace; font-size: 14px; }
+  .wi-gain.up { color: var(--teal); }
+  .wi-gain.down { color: var(--rust); }
+
+  footer { border-top: 1px solid var(--border); padding: 36px 0; }
+  .foot-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; font-size: 12.5px; color: var(--text-dim); line-height: 1.6; }
+
+  @media (max-width: 860px) {
+    .stat-row { grid-template-columns: repeat(2, 1fr); }
+    .deepdive-grid { grid-template-columns: 1fr; }
+    .foot-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="tape-outer"><div class="tape-track" id="tape"></div></div>
+
+<div class="wrap hero">
+  <div class="eyebrow">A DECADE ON WALL STREET · 2015–2026</div>
+  <h1 class="title">Twenty-five companies, one turbulent decade of gains.</h1>
+  <p class="lede">A hands-on look at how twenty-five major, well-known US companies — spanning technology, finance, healthcare, energy, retail, consumer staples and discretionary, industrials, utilities, materials, real estate, communication services, and autos — actually performed over the last market decade.</p>
+  <div class="chip">This covers 25 large companies, not the full US market, and the decade figures below are historical. Nothing here is investment advice or a prediction — see the methodology note at the bottom.</div>
+  <div class="live-status" id="liveStatus">
+    <span class="live-dot off"></span><span>Loading live prices…</span>
+  </div>
+  <div id="moverBanner"></div>
+</div>
+
+<div class="wrap">
+  <section>
+    <div class="section-head">
+      <div>
+        <h2 class="section-title">The shape of the decade</h2>
+        <div class="section-sub">Every $100 invested at the start of 2015 — indexed growth, one line per company.</div>
+      </div>
+    </div>
+    <div class="stat-row" id="statRow"></div>
+    <div class="chart-card">
+      <svg id="growthChart" viewBox="0 0 900 420" style="width:100%; height:420px;"></svg>
+      <div class="legend-row" id="legendRow"></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <div>
+        <h2 class="section-title">Live pulse</h2>
+        <div class="section-sub">Streaks build up automatically as the daily tracking accumulates — check back as more days log in.</div>
+      </div>
+    </div>
+    <div class="chart-card"><div id="pulseSection"></div></div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <div>
+        <h2 class="section-title">By sector</h2>
+        <div class="section-sub">Average 10-year CAGR of the companies in each sector bucket.</div>
+      </div>
+    </div>
+    <div class="chart-card"><div class="sector-list" id="sectorList"></div></div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <div>
+        <h2 class="section-title">How they move together</h2>
+        <div class="section-sub">Correlation of annual returns, 2016–2025. Near +1 means they tend to rise and fall together; near -1 means they move opposite; near 0 means unrelated.</div>
+      </div>
+    </div>
+    <div class="chart-card" style="overflow-x:auto;"><div id="corrMatrix"></div></div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <div>
+        <h2 class="section-title">The screener</h2>
+        <div class="section-sub">Ranked by historical 10-year CAGR — describes the past, not a forecast. Click any row to open its profile below.</div>
+      </div>
+    </div>
+    <div class="chart-card" style="padding:0; overflow-x:auto;">
+      <table class="screener">
+        <thead>
+          <tr>
+            <th data-key="ticker">Company</th>
+            <th data-key="sector">Sector</th>
+            <th data-key="cagr10" style="text-align:right">10-yr CAGR</th>
+            <th data-key="vol" style="text-align:right">Volatility</th>
+            <th data-key="marketCap" style="text-align:right">Market Cap</th>
+          </tr>
+        </thead>
+        <tbody id="screenerBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <div>
+        <h2 class="section-title">Company profile</h2>
+        <div class="section-sub">Annual returns and the story behind them, plus today's live price.</div>
+      </div>
+    </div>
+    <div class="ticker-pills" id="tickerPills"></div>
+    <div class="deepdive-grid">
+      <div class="chart-card"><svg id="returnsChart" viewBox="0 0 500 280" style="width:100%; height:280px;"></svg></div>
+      <div class="chart-card" id="profileCard"></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <div>
+        <h2 class="section-title">What if you'd invested?</h2>
+        <div class="section-sub">A hypothetical using the historical annual closes above — not a projection of future returns, and not investment advice.</div>
+      </div>
+    </div>
+    <div class="chart-card">
+      <div class="whatif-controls">
+        <label>Amount
+          <input type="number" id="wiAmount" value="1000" min="1" step="100">
+        </label>
+        <label>In
+          <select id="wiTicker"></select>
+        </label>
+        <label>Starting
+          <select id="wiYear"></select>
+        </label>
+      </div>
+      <div id="wiResult"></div>
+    </div>
+  </section>
+</div>
+
+<footer>
+  <div class="wrap foot-grid">
+    <div><strong style="color:var(--text)">Methodology.</strong> Twenty-five large, widely-held US companies were selected by hand to span major sectors — a curated sample, not the full market. Historical prices are annual closes; "10-yr CAGR" runs 2015 close → 2025 close; "volatility" is the standard deviation of annual returns 2016–2025. The July 2026 snapshot was retrieved from Macrotrends. Live prices, when available, come from Alpha Vantage via an automated daily job — see <span class="mono">data/prices.json</span> for today's snapshot, <span class="mono">data/history.json</span> for the running day-by-day log this page has collected since going live, and the "Update stock prices" GitHub Action in this repo.</div>
+    <div><strong style="color:var(--text)">Not financial advice.</strong> Everything here describes what already happened. Past performance is not indicative of future results. High historical growth (NVDA, TSLA) came with equally large drawdowns. Consider your own goals and risk tolerance, and speak with a licensed financial advisor before making investment decisions.</div>
+  </div>
+</footer>
+
+<script>
+/* ---------------------------------------------------------------------
+   DATA — 25-company dataset spanning 13 sectors.
+--------------------------------------------------------------------- */
+const STOCKS = [
+  { ticker:"AAPL", name:"Apple", sector:"Technology", industry:"Consumer Hardware", marketCap:4631, color:"#2DD4BF",
+    blurb:"iPhone-era compounding continued into the AI decade. Services revenue and a relentless buyback program turned steady unit growth into one of the market's most reliable long-run compounders.",
+    prices:{2015:23.69,2016:26.65,2017:39.56,2018:37.43,2019:70.72,2020:128.93,2021:173.60,2022:127.76,2023:190.38,2024:248.83,2025:271.36,2026:315.32}},
+  { ticker:"MSFT", name:"Microsoft", sector:"Technology", industry:"Software", marketCap:2861, color:"#5EEAD4",
+    blurb:"The cloud pivot paid off. Azure and the shift to subscriptions reset Microsoft's growth trajectory for most of the decade, though 2026 has brought a pullback from AI-capex worries.",
+    prices:{2015:48.36,2016:55.66,2017:78.32,2018:94.61,2019:149.07,2020:212.48,2021:323.98,2022:233.18,2023:368.87,2024:416.56,2025:481.48,2026:385.10}},
+  { ticker:"NVDA", name:"NVIDIA", sector:"Technology", industry:"Semiconductors", marketCap:5105, color:"#14B8A6",
+    blurb:"The decade's standout. GPU demand for AI training and inference turned a $0.80 stock into one worth well over $200 — with two separate 50%+ drawdowns along the way.",
+    prices:{2015:0.80,2016:2.63,2017:4.78,2018:3.31,2019:5.85,2020:13.00,2021:29.32,2022:14.58,2023:49.43,2024:134.09,2025:186.27,2026:203.53}},
+  { ticker:"GOOGL", name:"Alphabet", sector:"Technology", industry:"Internet Services", marketCap:4328, color:"#7DD3FC",
+    blurb:"Search dominance funded a long cloud and AI build-out. A rough 2022 gave way to a sharp AI-driven rebound in 2025.",
+    prices:{2015:38.56,2016:39.27,2017:52.21,2018:51.79,2019:66.38,2020:86.86,2021:143.58,2022:87.45,2023:138.46,2024:188.32,2025:312.59,2026:357.18}},
+  { ticker:"AMZN", name:"Amazon", sector:"Retail", industry:"Internet Commerce", marketCap:2639, color:"#FB923C",
+    blurb:"E-commerce scale plus AWS's high-margin cloud business. A brutal 2022 was followed by a sharp recovery as profitability came back into focus.",
+    prices:{2015:33.79,2016:37.49,2017:58.47,2018:75.10,2019:92.39,2020:162.85,2021:166.72,2022:84.00,2023:151.94,2024:219.39,2025:230.82,2026:245.34}},
+  { ticker:"META", name:"Meta Platforms", sector:"Technology", industry:"Internet Software", marketCap:1693, color:"#A78BFA",
+    blurb:"From 'metaverse' skepticism in 2022 (down 64%) to an efficiency-and-AI-driven rebound that nearly tripled the stock in 2023 alone.",
+    prices:{2015:103.75,2016:114.05,2017:174.92,2018:129.95,2019:203.46,2020:270.78,2021:333.42,2022:119.29,2023:350.88,2024:582.63,2025:658.92,2026:669.21}},
+  { ticker:"JPM", name:"JPMorgan Chase", sector:"Finance", industry:"Investment Banking", marketCap:886, color:"#D4A857",
+    blurb:"Steady compounding through a full rate cycle. Higher-for-longer interest rates after 2022 boosted net interest income.",
+    prices:{2015:49.68,2016:66.83,2017:84.72,2018:79.11,2019:116.49,2020:110.04,2021:140.57,2022:122.80,2023:160.41,2024:231.46,2025:317.71,2026:335.47}},
+  { ticker:"UNH", name:"UnitedHealth Group", sector:"Healthcare", industry:"Managed Care", marketCap:386, color:"#F472B6",
+    blurb:"A decade-long run of steady growth was interrupted hard in 2025 — a 33% single-year decline tied to rising medical costs and margin pressure.",
+    prices:{2015:98.89,2016:136.87,2017:191.40,2018:219.20,2019:263.04,2020:318.94,2021:463.11,2022:495.23,2023:499.14,2024:487.11,2025:325.70,2026:424.62}},
+  { ticker:"XOM", name:"ExxonMobil", sector:"Energy", industry:"Oil & Gas Integrated", marketCap:568, color:"#E4693C",
+    blurb:"Energy's boom-bust cycle on full display: a weak 2015–2020 stretch followed by an 87% surge in 2022 as energy prices spiked.",
+    prices:{2015:49.62,2016:59.48,2017:57.22,2018:48.58,2019:52.10,2020:33.23,2021:52.37,2022:98.16,2023:92.02,2024:102.38,2025:118.74,2026:137.09}},
+  { ticker:"TSLA", name:"Tesla", sector:"Automotive", industry:"EV Manufacturing", marketCap:1527, color:"#EF4444",
+    blurb:"The most volatile name in this set — a 743% single-year gain in 2020 and a 65% single-year loss in 2022.",
+    prices:{2015:16.00,2016:14.25,2017:20.76,2018:22.19,2019:27.89,2020:235.22,2021:352.26,2022:123.18,2023:248.48,2024:403.84,2025:449.72,2026:407.76}},
+  { ticker:"KO", name:"Coca-Cola", sector:"Consumer Staples", industry:"Beverages", marketCap:356, color:"#FDE68A",
+    blurb:"The steadiest name in the group. No single year with a loss greater than 4.4%, plus a long dividend history.",
+    prices:{2015:30.96,2016:30.85,2017:35.29,2018:37.68,2019:45.44,2020:46.56,2021:51.85,2022:57.36,2023:54.81,2024:59.68,2025:68.99,2026:83.49}},
+  { ticker:"WMT", name:"Walmart", sector:"Retail", industry:"Supermarket Chains", marketCap:893, color:"#94A3B8",
+    blurb:"Quiet compounding through grocery execution and e-commerce, with a sharp acceleration in 2023–2024 as omnichannel investments paid off.",
+    prices:{2015:16.96,2016:19.68,2017:28.85,2018:27.86,2019:36.26,2020:44.72,2021:45.60,2022:45.39,2023:51.23,2024:89.14,2025:110.97,2026:113.90}},
+  { ticker:"V", name:"Visa", sector:"Finance", industry:"Payments", marketCap:626, color:"#22D3EE",
+    blurb:"Payments infrastructure with a toll-booth business model — steady double-digit growth through the decade as global card spending compounded, with barely a down year.",
+    prices:{2015:72.00,2016:72.99,2017:107.42,2018:125.13,2019:179.35,2020:210.06,2021:209.40,2022:202.27,2023:255.48,2024:312.51,2025:349.26,2026:357.75}},
+  { ticker:"BAC", name:"Bank of America", sector:"Finance", industry:"Banking", marketCap:423, color:"#0EA5E9",
+    blurb:"The most volatile of the big banks in this set. A brutal 2022, then two straight years of 28%+ gains as rate cuts and a strong consumer lifted the stock to new highs.",
+    prices:{2015:13.37,2016:17.83,2017:24.20,2018:20.57,2019:30.07,2020:26.57,2021:39.76,2022:30.28,2023:31.75,2024:42.49,2025:54.41,2026:59.50}},
+  { ticker:"LLY", name:"Eli Lilly", sector:"Healthcare", industry:"Pharmaceuticals", marketCap:1119, color:"#C084FC",
+    blurb:"GLP-1 weight-loss and diabetes drugs turned Eli Lilly into one of the most valuable healthcare companies in the world — three consecutive years of 33%+ gains from 2023 to 2025.",
+    prices:{2015:70.75,2016:63.41,2017:74.72,2018:104.95,2019:121.89,2020:159.71,2021:265.23,2022:356.05,2023:572.91,2024:763.69,2025:1071.05,2026:1181.87}},
+  { ticker:"PFE", name:"Pfizer", sector:"Healthcare", industry:"Pharmaceuticals", marketCap:138, color:"#E879F9",
+    blurb:"The COVID-vaccine windfall came and went. After peaking near $48 in 2021, the stock has spent four years searching for a bottom — a reminder that a blockbuster product doesn't guarantee lasting gains.",
+    prices:{2015:19.25,2016:20.10,2017:23.30,2018:29.09,2019:27.08,2020:27.91,2021:46.52,2022:41.68,2023:24.48,2024:23.94,2025:24.09,2026:24.48}},
+  { ticker:"PG", name:"Procter & Gamble", sector:"Consumer Staples", industry:"Household Products", marketCap:342, color:"#FDBA74",
+    blurb:"The definition of boring-and-steady. Modest moves most years, funded by a portfolio of everyday household brands rather than any single hit product.",
+    prices:{2015:59.43,2016:65.00,2017:73.25,2018:75.86,2019:105.98,2020:120.98,2021:145.81,2022:138.45,2023:137.26,2024:160.94,2025:141.24,2026:148.37}},
+  { ticker:"HD", name:"Home Depot", sector:"Consumer Discretionary", industry:"Home Improvement Retail", marketCap:342, color:"#FB7185",
+    blurb:"Home-improvement demand surged during the pandemic (+59% in 2021) then cooled hard as high mortgage rates froze the housing market — down in three of the last four years.",
+    prices:{2015:102.75,2016:106.39,2017:153.87,2018:142.64,2019:186.23,2020:231.86,2021:369.83,2022:288.56,2023:325.40,2024:374.20,2025:339.27,2026:337.11}},
+  { ticker:"MCD", name:"McDonald's", sector:"Consumer Discretionary", industry:"Restaurants", marketCap:195, color:"#FBBF24",
+    blurb:"A steady compounder for most of the decade, though 2026 has brought the first real wobble in years as value-conscious consumers pull back on discretionary spending.",
+    prices:{2015:91.47,2016:97.15,2017:140.92,2018:149.06,2019:169.89,2020:189.08,2021:241.62,2022:242.85,2023:279.42,2024:279.82,2025:301.89,2026:272.61}},
+  { ticker:"DIS", name:"Disney", sector:"Communication Services", industry:"Media & Entertainment", marketCap:167, color:"#818CF8",
+    blurb:"A round-trip story: streaming-era optimism drove the stock to an all-time high in 2021, then a brutal 44% drop in 2022 as streaming losses mounted. Still hasn't reclaimed those highs.",
+    prices:{2015:96.12,2016:96.77,2017:101.37,2018:105.03,2019:140.23,2020:175.67,2021:150.18,2022:84.24,2023:87.83,2024:109.30,2025:112.91,2026:95.87}},
+  { ticker:"CAT", name:"Caterpillar", sector:"Industrials", industry:"Construction & Mining Equipment", marketCap:429, color:"#EAB308",
+    blurb:"Long dismissed as an old-economy industrial, Caterpillar has ripped higher since 2023 on data-center and infrastructure construction demand — up over 60% in both 2025 and 2026 so far.",
+    prices:{2015:52.96,2016:75.26,2017:131.72,2018:108.59,2019:129.78,2020:164.78,2021:191.07,2022:226.61,2023:285.42,2024:355.79,2025:570.45,2026:933.34}},
+  { ticker:"NEE", name:"NextEra Energy", sector:"Utilities", industry:"Electric Power", marketCap:183, color:"#4ADE80",
+    blurb:"A clean-energy utility that compounded quietly for most of the decade before a rough 2023 (-25%) tied to rate pressure on its renewable-development unit, followed by a steady recovery.",
+    prices:{2015:19.83,2016:23.48,2017:31.56,2018:36.07,2019:51.47,2020:66.94,2021:82.60,2022:75.55,2023:56.44,2024:68.55,2025:79.16,2026:88.38}},
+  { ticker:"LIN", name:"Linde", sector:"Materials", industry:"Industrial Gases", marketCap:245, color:"#67E8F9",
+    blurb:"An unglamorous industrial-gas supplier to hospitals, chip fabs, and now AI data centers — a low-volatility compounder that rarely makes headlines but rarely disappoints either.",
+    prices:{2015:85.33,2016:100.28,2017:135.52,2018:139.60,2019:194.10,2020:244.33,2021:325.91,2022:311.60,2023:397.77,2024:410.43,2025:423.62,2026:524.06}},
+  { ticker:"AMT", name:"American Tower", sector:"Real Estate", industry:"Cell Tower REIT", marketCap:84, color:"#C4B5FD",
+    blurb:"A cell-tower REIT that rode the 2010s wireless build-out to a 2021 peak, then struggled with higher interest rates, since REITs are especially rate-sensitive — still well below its all-time high five years later.",
+    prices:{2015:74.39,2016:82.74,2017:113.95,2018:129.13,2019:190.95,2020:190.06,2021:252.56,2022:187.73,2023:197.85,2024:173.78,2025:172.19,2026:168.59}},
+  { ticker:"AVGO", name:"Broadcom", sector:"Technology", industry:"Semiconductors", marketCap:1903, color:"#F97316",
+    blurb:"From a mid-cap chipmaker to a nearly $2 trillion AI infrastructure supplier — three straight years of triple-digit or near-triple-digit gains from 2023 to 2025 before cooling off in 2026.",
+    prices:{2015:11.21,2016:13.86,2017:20.54,2018:20.99,2019:27.09,2020:39.24,2021:61.41,2022:53.26,2023:108.75,2024:228.90,2025:344.80,2026:384.05}},
+];
+const YEARS = [2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025,2026];
+
+function annualReturns(prices){ const out=[]; for(let y=2016;y<=2025;y++){ const p=prices[y-1], c=prices[y]; if(p!=null&&c!=null) out.push((c-p)/p*100); } return out; }
+function cagr(prices,y0,y1){ const yrs=y1-y0; return (Math.pow(prices[y1]/prices[y0],1/yrs)-1)*100; }
+function stdev(arr){ const m=arr.reduce((a,b)=>a+b,0)/arr.length; const v=arr.reduce((a,b)=>a+(b-m)**2,0)/(arr.length-1); return Math.sqrt(v); }
+function fmtPct(n,d=1){ return `${n>0?"+":""}${n.toFixed(d)}%`; }
+
+const ENRICHED = STOCKS.map(s => {
+  const returns = annualReturns(s.prices);
+  return { ...s, cagr10: cagr(s.prices,2015,2025), vol: stdev(returns), returns };
+});
+
+const SECTOR_GROUPS = Object.values(ENRICHED.reduce((acc,s)=>{
+  acc[s.sector] = acc[s.sector] || { sector:s.sector, members:[] };
+  acc[s.sector].members.push(s);
+  return acc;
+},{})).map(g => ({
+  sector:g.sector, tickers:g.members.map(m=>m.ticker).join(", "),
+  avgCagr: g.members.reduce((a,b)=>a+b.cagr10,0)/g.members.length,
+})).sort((a,b)=>b.avgCagr-a.avgCagr);
+
+/* ---------------------------------------------------------------------
+   LIVE PRICES — fetched from data/prices.json (today's snapshot) and
+   data/history.json (running daily log), both updated by
+   .github/workflows/update-prices.yml via scripts/update-prices.mjs.
+--------------------------------------------------------------------- */
+let liveQuotes = {};
+let liveMeta = { generatedAt: null };
+let liveHistory = []; // [{ date: "YYYY-MM-DD", quotes: { TICKER: {price, changePercent} } }, ...] oldest first
+
+async function loadLivePrices() {
+  const statusEl = document.getElementById("liveStatus");
+  try {
+    const res = await fetch("data/prices.json?t=" + Date.now());
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    const json = await res.json();
+    liveQuotes = json.quotes || {};
+    liveMeta.generatedAt = json.generatedAt || null;
+
+    let historyNote = "";
+    try {
+      const histRes = await fetch("data/history.json?t=" + Date.now());
+      if (histRes.ok) {
+        const parsed = await histRes.json();
+        liveHistory = Array.isArray(parsed) ? parsed : [];
+        if (liveHistory.length) {
+          const span = liveHistory.length === 1
+            ? "1 day tracked so far"
+            : `${liveHistory.length} trading days tracked since ${liveHistory[0].date}`;
+          historyNote = ` · ${span}`;
+        }
+      }
+    } catch {
+      // history is a bonus feature — a failure here shouldn't block the rest of the page
+      liveHistory = [];
+    }
+
+    if (Object.keys(liveQuotes).length && liveMeta.generatedAt) {
+      const d = new Date(liveMeta.generatedAt);
+      statusEl.innerHTML = `<span class="live-dot on"></span><span>Live — prices as of ${d.toLocaleString()}${historyNote}</span>`;
+    } else {
+      statusEl.innerHTML = `<span class="live-dot off"></span><span>No live data yet — showing the July 2026 snapshot (first automated update runs on the next scheduled job)</span>`;
+    }
+  } catch (err) {
+    statusEl.innerHTML = `<span class="live-dot off"></span><span>Couldn't load live prices (${err.message}) — showing the July 2026 snapshot</span>`;
+  }
+  renderTape();
+  renderProfile();
+  renderMoverBanner();
+  renderPulse();
+  if (document.getElementById("wiTicker").options.length) renderWhatIf();
+}
+
+/* ---------------------------------------------------------------------
+   RENDER: today's biggest mover
+--------------------------------------------------------------------- */
+function renderMoverBanner() {
+  const el = document.getElementById("moverBanner");
+  const candidates = ENRICHED
+    .map(s => ({ s, live: liveQuotes[s.ticker] }))
+    .filter(x => x.live && x.live.changePercent != null);
+
+  if (!candidates.length) {
+    el.innerHTML = "";
+    return;
+  }
+
+  const top = candidates.reduce((a, b) => Math.abs(b.live.changePercent) > Math.abs(a.live.changePercent) ? b : a);
+  const dir = top.live.changePercent >= 0;
+  el.innerHTML = `
+    <div class="mover-banner">
+      <span class="mv-label">Today's biggest mover:</span>
+      <span class="mv-ticker" style="color:${top.s.color}">${top.s.ticker}</span>
+      <span style="color:${dir ? 'var(--teal)' : 'var(--rust)'}">${dir ? "▲" : "▼"} ${fmtPct(top.live.changePercent)}</span>
+    </div>`;
+}
+
+/* ---------------------------------------------------------------------
+   RENDER: live pulse — streak badges built from history.json
+--------------------------------------------------------------------- */
+function computeStreaks() {
+  const streaks = [];
+  ENRICHED.forEach(s => {
+    const daySeries = liveHistory
+      .map(day => day.quotes[s.ticker] && day.quotes[s.ticker].changePercent)
+      .filter(v => v != null);
+    if (daySeries.length < 2) return;
+
+    const latestSign = daySeries[daySeries.length - 1] >= 0;
+    let streak = 1;
+    for (let i = daySeries.length - 2; i >= 0; i--) {
+      if ((daySeries[i] >= 0) === latestSign) streak++;
+      else break;
+    }
+    if (streak >= 2) streaks.push({ ticker: s.ticker, name: s.name, color: s.color, streak, up: latestSign });
+  });
+  return streaks.sort((a, b) => b.streak - a.streak);
+}
+
+function renderPulse() {
+  const el = document.getElementById("pulseSection");
+  const streaks = computeStreaks();
+
+  if (!streaks.length) {
+    const daysLogged = liveHistory.length;
+    el.innerHTML = `<div class="pulse-empty">No active streaks yet (needs at least 2 consecutive days moving the same direction). ${daysLogged} day${daysLogged===1?"":"s"} logged so far — check back as more accumulate.</div>`;
+    return;
+  }
+
+  el.innerHTML = `<div class="pulse-grid">${streaks.map(st => `
+    <div class="pulse-badge">
+      <span class="pb-ticker" style="color:${st.color}">${st.ticker}</span>
+      <span class="pb-streak ${st.up ? "up" : "down"}">${st.up ? "▲" : "▼"} ${st.streak} day${st.streak===1?"":"s"} ${st.up ? "up" : "down"}</span>
+    </div>`).join("")}</div>`;
+}
+
+/* ---------------------------------------------------------------------
+   RENDER: ticker tape
+--------------------------------------------------------------------- */
+function renderTape() {
+  const tape = document.getElementById("tape");
+  const items = [...ENRICHED, ...ENRICHED];
+  tape.innerHTML = items.map(s => {
+    const live = liveQuotes[s.ticker];
+    if (live) {
+      const dir = live.changePercent == null ? null : live.changePercent >= 0;
+      return `<span class="tape-item">
+        <span class="live-pip"></span>
+        <span class="tape-ticker">${s.ticker}</span>
+        <span class="tape-price">$${live.price.toFixed(2)}</span>
+        ${dir !== null ? `<span class="tape-val ${dir?"up":"down"}">${dir?"▲":"▼"} ${fmtPct(live.changePercent)}</span>` : ""}
+        <span class="tape-dot">•</span>
+      </span>`;
+    }
+    return `<span class="tape-item">
+      <span class="tape-ticker">${s.ticker}</span>
+      <span class="tape-val muted ${s.cagr10>=0?"up":"down"}">${s.cagr10>=0?"▲":"▼"} ${fmtPct(s.cagr10)} · 10y</span>
+      <span class="tape-dot">•</span>
+    </span>`;
+  }).join("");
+}
+
+/* ---------------------------------------------------------------------
+   RENDER: stat row
+--------------------------------------------------------------------- */
+function renderStatRow() {
+  const best = ENRICHED.reduce((a,b)=>b.cagr10>a.cagr10?b:a);
+  const worst = ENRICHED.reduce((a,b)=>b.cagr10<a.cagr10?b:a);
+  const mostVol = ENRICHED.reduce((a,b)=>b.vol>a.vol?b:a);
+  const steadiest = ENRICHED.reduce((a,b)=>b.vol<a.vol?b:a);
+  const cards = [
+    ["Best 10-yr CAGR", fmtPct(best.cagr10), `${best.ticker} — ${best.name}`],
+    ["Weakest 10-yr CAGR", fmtPct(worst.cagr10), `${worst.ticker} — ${worst.name}`],
+    ["Most volatile", `${mostVol.vol.toFixed(0)} pts`, `${mostVol.ticker} — std. dev of annual returns`],
+    ["Steadiest", `${steadiest.vol.toFixed(0)} pts`, `${steadiest.ticker} — std. dev of annual returns`],
+  ];
+  document.getElementById("statRow").innerHTML = cards.map(([label,val,sub]) =>
+    `<div class="stat-card"><div class="stat-label">${label}</div><div class="stat-value" style="color:var(--teal)">${val}</div><div class="stat-sub">${sub}</div></div>`
+  ).join("");
+}
+
+/* ---------------------------------------------------------------------
+   RENDER: growth chart (hand-rolled SVG line chart)
+--------------------------------------------------------------------- */
+let hiddenTickers = new Set();
+
+function renderGrowthChart() {
+  const W = 900, H = 420, padL = 64, padR = 10, padT = 14, padB = 30;
+  const indexed = YEARS.map(year => {
+    const row = { year };
+    ENRICHED.forEach(s => row[s.ticker] = s.prices[year] / s.prices[2015] * 100);
+    return row;
+  });
+  const maxVal = Math.max(...indexed.flatMap(r => ENRICHED.map(s => r[s.ticker])));
+  const x = i => padL + (i / (YEARS.length - 1)) * (W - padL - padR);
+  const y = v => H - padB - (v / maxVal) * (H - padT - padB);
+
+  let svg = "";
+  svg += `<line x1="${padL}" y1="${padT}" x2="${padL}" y2="${H-padB}" stroke="rgba(232,230,222,0.15)" />`;
+  svg += `<line x1="${padL}" y1="${H-padB}" x2="${W-padR}" y2="${H-padB}" stroke="rgba(232,230,222,0.15)" />`;
+  for (let g = 0; g <= 4; g++) {
+    const gy = padT + g * (H - padT - padB) / 4;
+    svg += `<line x1="${padL}" y1="${gy}" x2="${W-padR}" y2="${gy}" stroke="rgba(232,230,222,0.06)" />`;
+    const val = Math.round(maxVal * (4 - g) / 4);
+    const label = val >= 1000 ? "$" + (val/1000).toFixed(0) + "k" : "$" + val;
+    svg += `<text x="${padL - 8}" y="${gy + 4}" fill="#93A0B8" font-size="11" font-family="IBM Plex Mono, monospace" text-anchor="end">${label}</text>`;
+  }
+  svg += `<text transform="rotate(-90)" x="-${(H - padT - padB) / 2 + padT}" y="13" fill="#93A0B8" font-size="10.5" font-family="IBM Plex Mono, monospace" text-anchor="middle">Value of $100 invested</text>`;
+  YEARS.forEach((yr,i) => {
+    svg += `<text x="${x(i)}" y="${H-8}" fill="#93A0B8" font-size="12" font-family="IBM Plex Mono, monospace" text-anchor="middle">${yr}</text>`;
+  });
+  ENRICHED.forEach(s => {
+    if (hiddenTickers.has(s.ticker)) return;
+    const d = indexed.map((r,i) => `${i===0?"M":"L"} ${x(i)} ${y(r[s.ticker])}`).join(" ");
+    svg += `<path d="${d}" fill="none" stroke="${s.color}" stroke-width="1.8" opacity="0.95" />`;
+  });
+  document.getElementById("growthChart").innerHTML = svg;
+
+  document.getElementById("legendRow").innerHTML = ENRICHED.map(s =>
+    `<span class="legend-pill ${hiddenTickers.has(s.ticker)?"":"active"}" data-ticker="${s.ticker}" style="${hiddenTickers.has(s.ticker)?"":`color:${s.color}`}">
+      <span class="sw" style="background:${s.color}"></span>${s.ticker}
+    </span>`
+  ).join("");
+  document.querySelectorAll(".legend-pill").forEach(pill => {
+    pill.onclick = () => {
+      const t = pill.dataset.ticker;
+      hiddenTickers.has(t) ? hiddenTickers.delete(t) : hiddenTickers.add(t);
+      renderGrowthChart();
+    };
+  });
+}
+
+/* ---------------------------------------------------------------------
+   RENDER: sector breakdown
+--------------------------------------------------------------------- */
+function renderSectors() {
+  document.getElementById("sectorList").innerHTML = SECTOR_GROUPS.map(g => `
+    <div class="sector-row">
+      <div><div class="sector-name">${g.sector}</div><div class="sector-tickers">${g.tickers}</div></div>
+      <div class="sector-bar-track"><div class="sector-bar-fill" style="width:${Math.min(100,g.avgCagr/75*100)}%"></div></div>
+      <div class="sector-cagr">${fmtPct(g.avgCagr)}</div>
+    </div>`).join("");
+}
+
+/* ---------------------------------------------------------------------
+   RENDER: correlation matrix (static — based on 2016–2025 annual returns)
+--------------------------------------------------------------------- */
+function pearson(a, b) {
+  const n = a.length;
+  const meanA = a.reduce((s, v) => s + v, 0) / n;
+  const meanB = b.reduce((s, v) => s + v, 0) / n;
+  let num = 0, denA = 0, denB = 0;
+  for (let i = 0; i < n; i++) {
+    const da = a[i] - meanA, db = b[i] - meanB;
+    num += da * db;
+    denA += da * da;
+    denB += db * db;
+  }
+  const den = Math.sqrt(denA * denB);
+  return den === 0 ? 0 : num / den;
+}
+
+function renderCorrMatrix() {
+  const headerRow = `<tr><th></th>${ENRICHED.map(s => `<th>${s.ticker}</th>`).join("")}</tr>`;
+  const bodyRows = ENRICHED.map((s1, i) => {
+    const cells = ENRICHED.map((s2, j) => {
+      const isDiag = i === j;
+      const v = pearson(s1.returns, s2.returns);
+      const alpha = (Math.abs(v) * 0.7 + 0.05).toFixed(2);
+      const bg = isDiag ? "rgba(232,230,222,0.06)" : v >= 0 ? `rgba(45,212,191,${alpha})` : `rgba(228,105,60,${alpha})`;
+      return `<td style="background:${bg}" title="${s1.ticker} vs ${s2.ticker}: ${v.toFixed(2)}">${isDiag ? "—" : v.toFixed(2)}</td>`;
+    }).join("");
+    return `<tr><th>${s1.ticker}</th>${cells}</tr>`;
+  }).join("");
+  document.getElementById("corrMatrix").innerHTML = `<table class="corr-table"><thead>${headerRow}</thead><tbody>${bodyRows}</tbody></table>`;
+}
+
+/* ---------------------------------------------------------------------
+   RENDER: what-if calculator (uses live price when available, falls
+   back to the July 2026 snapshot otherwise)
+--------------------------------------------------------------------- */
+const WHATIF_YEARS = [2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025];
+
+function initWhatIf() {
+  document.getElementById("wiTicker").innerHTML = ENRICHED.map(s => `<option value="${s.ticker}">${s.ticker} — ${s.name}</option>`).join("");
+  document.getElementById("wiYear").innerHTML = WHATIF_YEARS.map(y => `<option value="${y}" ${y===2015?"selected":""}>${y}</option>`).join("");
+  ["wiAmount","wiTicker","wiYear"].forEach(id => document.getElementById(id).addEventListener("input", renderWhatIf));
+  renderWhatIf();
+}
+
+function renderWhatIf() {
+  const amountRaw = parseFloat(document.getElementById("wiAmount").value);
+  const amount = Number.isFinite(amountRaw) && amountRaw > 0 ? amountRaw : 0;
+  const ticker = document.getElementById("wiTicker").value;
+  const year = parseInt(document.getElementById("wiYear").value, 10);
+  const s = ENRICHED.find(e => e.ticker === ticker);
+  const resultEl = document.getElementById("wiResult");
+
+  if (!s || !amount) {
+    resultEl.innerHTML = `<div class="wi-headline">Enter an amount to see the hypothetical.</div>`;
+    return;
+  }
+
+  const startPrice = s.prices[year];
+  const live = liveQuotes[ticker];
+  const currentPrice = live ? live.price : s.prices[2026];
+  const shares = amount / startPrice;
+  const value = shares * currentPrice;
+  const gain = value - amount;
+  const gainPct = (gain / amount) * 100;
+
+  resultEl.innerHTML = `
+    <div class="wi-headline">$${amount.toLocaleString(undefined,{maximumFractionDigits:0})} in <span style="color:${s.color}">${ticker}</span> since ${year} would be worth</div>
+    <div class="wi-value">$${value.toLocaleString(undefined,{maximumFractionDigits:0})}</div>
+    <div class="wi-gain ${gain>=0?"up":"down"}">${gain>=0?"+":"-"}$${Math.abs(gain).toLocaleString(undefined,{maximumFractionDigits:0})} (${fmtPct(gainPct)}) · ${live ? "using today's live price" : "using the Jul 2026 snapshot"}</div>`;
+}
+
+/* ---------------------------------------------------------------------
+   RENDER: screener table
+--------------------------------------------------------------------- */
+let sortKey = "cagr10", sortDir = "desc";
+function renderScreener() {
+  const rows = [...ENRICHED].sort((a,b) => {
+    const va=a[sortKey], vb=b[sortKey];
+    const cmp = typeof va === "string" ? va.localeCompare(vb) : va-vb;
+    return sortDir==="asc" ? cmp : -cmp;
+  });
+  document.getElementById("screenerBody").innerHTML = rows.map(s => `
+    <tr class="row" data-ticker="${s.ticker}">
+      <td><div class="row-ticker" style="color:${s.color}">${s.ticker}</div><div class="row-name">${s.name}</div></td>
+      <td><span class="sector-tag">${s.sector}</span></td>
+      <td class="cell-num ${s.cagr10>=0?"up":"down"}">${fmtPct(s.cagr10)}</td>
+      <td class="cell-num">${s.vol.toFixed(0)} pts</td>
+      <td class="cell-num">$${s.marketCap.toLocaleString()}B</td>
+    </tr>`).join("");
+  document.querySelectorAll("tr.row").forEach(tr => {
+    tr.onclick = () => { selectedTicker = tr.dataset.ticker; renderProfile(); };
+  });
+}
+document.querySelectorAll("th[data-key]").forEach(th => {
+  th.onclick = () => {
+    const key = th.dataset.key;
+    sortDir = (key === sortKey) ? (sortDir==="asc"?"desc":"asc") : "desc";
+    sortKey = key;
+    renderScreener();
+  };
+});
+
+/* ---------------------------------------------------------------------
+   RENDER: company profile
+--------------------------------------------------------------------- */
+let selectedTicker = "NVDA";
+
+function buildSparkline(ticker) {
+  const points = liveHistory
+    .map(day => ({ date: day.date, price: day.quotes[ticker] && day.quotes[ticker].price }))
+    .filter(p => p.price != null);
+
+  if (points.length < 2) {
+    return `<div class="spark-empty">${points.length === 1 ? "1 day tracked so far — a trend line will appear once there's more history." : "No live tracking history yet."}</div>`;
+  }
+
+  const W = 460, H = 60, pad = 4;
+  const prices = points.map(p => p.price);
+  const min = Math.min(...prices), max = Math.max(...prices);
+  const range = max - min || 1;
+  const x = i => pad + (i / (points.length - 1)) * (W - pad * 2);
+  const y = v => H - pad - ((v - min) / range) * (H - pad * 2);
+  const d = points.map((p, i) => `${i === 0 ? "M" : "L"} ${x(i)} ${y(p.price)}`).join(" ");
+  const trendUp = points[points.length - 1].price >= points[0].price;
+
+  return `
+    <div class="spark-wrap">
+      <svg viewBox="0 0 ${W} ${H}" class="spark-svg">
+        <path d="${d}" fill="none" stroke="${trendUp ? "var(--teal)" : "var(--rust)"}" stroke-width="2" />
+        <circle cx="${x(points.length - 1)}" cy="${y(points[points.length - 1].price)}" r="3" fill="${trendUp ? "var(--teal)" : "var(--rust)"}" />
+      </svg>
+      <div class="spark-caption">${points[0].date} → ${points[points.length - 1].date} · $${points[0].price.toFixed(2)} → $${points[points.length - 1].price.toFixed(2)}</div>
+    </div>`;
+}
+
+function renderProfile() {
+  const s = ENRICHED.find(e => e.ticker === selectedTicker);
+
+  document.getElementById("tickerPills").innerHTML = ENRICHED.map(e =>
+    `<span class="pill ${e.ticker===selectedTicker?"active":""}" data-ticker="${e.ticker}" style="${e.ticker===selectedTicker?`background:${e.color}`:""}">${e.ticker}</span>`
+  ).join("");
+  document.querySelectorAll(".pill").forEach(p => p.onclick = () => { selectedTicker = p.dataset.ticker; renderProfile(); });
+
+  const W=500,H=280,padL=40,padR=10,padT=10,padB=30;
+  const vals = s.returns;
+  const maxAbs = Math.max(...vals.map(v=>Math.abs(v)), 10);
+  const barW = (W-padL-padR) / vals.length * 0.6;
+  const midY = padT + (H-padT-padB)/2;
+  let svg = `<line x1="${padL}" y1="${midY}" x2="${W-padR}" y2="${midY}" stroke="rgba(232,230,222,0.15)" />`;
+  vals.forEach((v,i) => {
+    const cx = padL + (i+0.5)/vals.length*(W-padL-padR);
+    const h = Math.abs(v)/maxAbs * (H-padT-padB)/2;
+    const yTop = v>=0 ? midY-h : midY;
+    svg += `<rect x="${cx-barW/2}" y="${yTop}" width="${barW}" height="${h}" fill="${v>=0?s.color:'#E4693C'}" rx="3" />`;
+    svg += `<text x="${cx}" y="${H-8}" fill="#93A0B8" font-size="11" font-family="IBM Plex Mono, monospace" text-anchor="middle">${2016+i}</text>`;
+  });
+  document.getElementById("returnsChart").innerHTML = svg;
+
+  const live = liveQuotes[s.ticker];
+  document.getElementById("profileCard").innerHTML = `
+    <h3 class="dd-name">${s.name} <span style="color:${s.color}">· ${s.ticker}</span></h3>
+    <div class="dd-sub">${s.sector} — ${s.industry}</div>
+    <p class="dd-blurb">${s.blurb}</p>
+    <div class="dd-stats">
+      <div><div class="dd-stat-label">10-yr CAGR</div><div class="dd-stat-value">${fmtPct(s.cagr10)}</div></div>
+      <div><div class="dd-stat-label">Volatility</div><div class="dd-stat-value">${s.vol.toFixed(0)} pts</div></div>
+      <div>
+        <div class="dd-stat-label">${live ? '<span style="color:var(--teal)">● Live price</span>' : "Current price (Jul 2026 snapshot)"}</div>
+        <div class="dd-stat-value">$${(live ? live.price : s.prices[2026]).toFixed(2)}</div>
+        ${live && live.changePercent!=null ? `<div class="dd-stat-delta" style="color:${live.changePercent>=0?'var(--teal)':'var(--rust)'}">${fmtPct(live.changePercent)} today</div>` : ""}
+      </div>
+      <div><div class="dd-stat-label">Market cap</div><div class="dd-stat-value">$${s.marketCap.toLocaleString()}B</div></div>
+    </div>
+    <div class="spark-section">
+      <div class="dd-stat-label" style="margin-bottom:8px;">Live tracking — since we started logging</div>
+      ${buildSparkline(s.ticker)}
+    </div>`;
+}
+
+/* ---------------------------------------------------------------------
+   INIT
+--------------------------------------------------------------------- */
+renderStatRow();
+renderGrowthChart();
+renderSectors();
+renderCorrMatrix();
+renderScreener();
+renderProfile();
+initWhatIf();
+loadLivePrices();
+</script>
+</body>
+</html>
