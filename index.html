@@ -24,7 +24,7 @@
     font-family: 'Inter', sans-serif; margin: 0; padding-bottom: 4rem;
   }
   .mono { font-family: 'IBM Plex Mono', monospace; }
-
+ 
   /* Ticker tape */
   .tape-outer { overflow: hidden; border-bottom: 1px solid var(--border); background: #0D1526; white-space: nowrap; padding: 10px 0; }
   .tape-track { display: inline-flex; animation: scrollTape 46s linear infinite; }
@@ -38,36 +38,36 @@
   .tape-dot { color: var(--border); margin-left: 10px; }
   .live-pip { width: 5px; height: 5px; border-radius: 50%; background: var(--teal); animation: pulseDot 1.6s ease-in-out infinite; flex-shrink: 0; }
   @keyframes pulseDot { 0%,100% { box-shadow: 0 0 0 0 rgba(45,212,191,0.5); } 50% { box-shadow: 0 0 0 5px rgba(45,212,191,0); } }
-
+ 
   .wrap { max-width: 1180px; margin: 0 auto; padding: 0 28px; }
   .hero { padding: 64px 0 40px; }
   .eyebrow { font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--gold); margin-bottom: 14px; }
   h1.title { font-family: 'Fraunces', serif; font-size: clamp(2.2rem, 5vw, 3.6rem); font-weight: 600; line-height: 1.05; margin: 0 0 20px; max-width: 760px; }
   .lede { font-size: 17px; line-height: 1.6; color: var(--text-dim); max-width: 640px; margin: 0 0 24px; }
   .chip { display: inline-flex; align-items: flex-start; gap: 8px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 12px 16px; font-size: 13px; color: var(--text-dim); max-width: 640px; line-height: 1.5; }
-
+ 
   .live-status { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 18px 0 0; font-family: 'IBM Plex Mono', monospace; font-size: 12.5px; color: var(--text-dim); }
   .live-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--teal); flex-shrink: 0; }
   .live-dot.on { animation: pulseDot 1.6s ease-in-out infinite; }
   .live-dot.off { background: var(--text-dim); }
-
+ 
   section { padding: 48px 0; border-top: 1px solid var(--border); }
   .section-head { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 28px; flex-wrap: wrap; gap: 12px; }
   h2.section-title { font-family: 'Fraunces', serif; font-size: 28px; font-weight: 600; margin: 0; }
   .section-sub { color: var(--text-dim); font-size: 14px; max-width: 480px; }
-
+ 
   .stat-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 32px; }
   .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 18px; }
   .stat-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-dim); margin-bottom: 8px; }
   .stat-value { font-family: 'IBM Plex Mono', monospace; font-size: 20px; font-weight: 600; }
   .stat-sub { font-size: 13px; color: var(--text-dim); margin-top: 4px; }
-
+ 
   .chart-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 24px; }
   .legend-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
   .legend-pill { display: inline-flex; align-items: center; gap: 6px; font-family: 'IBM Plex Mono', monospace; font-size: 11.5px; padding: 5px 10px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface2); cursor: pointer; color: var(--text-dim); }
   .legend-pill.active { color: var(--text); }
   .legend-pill .sw { width: 8px; height: 8px; border-radius: 50%; }
-
+ 
   .sector-list { display: flex; flex-direction: column; gap: 10px; }
   .sector-row { display: grid; grid-template-columns: 160px 1fr 90px; align-items: center; gap: 14px; }
   .sector-name { font-weight: 600; font-size: 14px; }
@@ -75,7 +75,7 @@
   .sector-bar-track { background: var(--surface2); border-radius: 6px; height: 10px; overflow: hidden; }
   .sector-bar-fill { height: 100%; border-radius: 6px; background: linear-gradient(90deg, var(--teal), #5EEAD4); }
   .sector-cagr { font-family: 'IBM Plex Mono', monospace; font-size: 13px; text-align: right; color: var(--teal); font-weight: 600; }
-
+ 
   table.screener { width: 100%; border-collapse: collapse; font-size: 13.5px; }
   table.screener th { text-align: left; font-family: 'IBM Plex Mono', monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-dim); padding: 10px 12px; border-bottom: 1px solid var(--border); cursor: pointer; user-select: none; white-space: nowrap; }
   table.screener th:hover { color: var(--text); }
@@ -87,7 +87,7 @@
   .cell-num.up { color: var(--teal); }
   .cell-num.down { color: var(--rust); }
   .sector-tag { font-size: 11px; padding: 3px 8px; border-radius: 999px; background: var(--surface2); color: var(--text-dim); border: 1px solid var(--border); }
-
+ 
   .deepdive-grid { display: grid; grid-template-columns: 1.1fr 1fr; gap: 28px; }
   .ticker-pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 22px; }
   .pill { font-family: 'IBM Plex Mono', monospace; font-size: 13px; font-weight: 600; padding: 7px 14px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface2); cursor: pointer; color: var(--text-dim); }
@@ -99,12 +99,12 @@
   .dd-stat-label { font-size: 10.5px; text-transform: uppercase; letter-spacing: .06em; color: var(--text-dim); }
   .dd-stat-value { font-family: 'IBM Plex Mono', monospace; font-size: 17px; font-weight: 600; margin-top: 3px; }
   .dd-stat-delta { font-size: 12px; margin-top: 2px; }
-
+ 
   .spark-section { margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--border); }
   .spark-svg { width: 100%; height: 60px; display: block; }
   .spark-caption { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text-dim); margin-top: 6px; }
   .spark-empty { font-size: 12.5px; color: var(--text-dim); font-style: italic; padding: 10px 0; }
-
+ 
   .mover-banner {
     display: inline-flex; align-items: center; gap: 8px; margin-top: 12px;
     font-family: 'IBM Plex Mono', monospace; font-size: 13px;
@@ -113,7 +113,7 @@
   }
   .mover-banner .mv-label { color: var(--text-dim); }
   .mover-banner .mv-ticker { font-weight: 700; }
-
+ 
   .pulse-empty { font-size: 13px; color: var(--text-dim); font-style: italic; padding: 4px 0; }
   .pulse-grid { display: flex; flex-wrap: wrap; gap: 10px; }
   .pulse-badge {
@@ -124,13 +124,13 @@
   .pulse-badge .pb-ticker { font-weight: 700; }
   .pulse-badge .pb-streak.up { color: var(--teal); }
   .pulse-badge .pb-streak.down { color: var(--rust); }
-
+ 
   table.corr-table { border-collapse: collapse; font-family: 'IBM Plex Mono', monospace; font-size: 11.5px; }
   table.corr-table th, table.corr-table td { padding: 7px 9px; text-align: center; white-space: nowrap; }
   table.corr-table thead th { color: var(--text-dim); font-weight: 500; border-bottom: 1px solid var(--border); }
   table.corr-table tbody th { color: var(--text-dim); font-weight: 500; text-align: left; border-right: 1px solid var(--border); }
   table.corr-table td { color: var(--text); border-radius: 4px; }
-
+ 
   .whatif-controls { display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-end; margin-bottom: 24px; }
   .whatif-controls label { display: flex; flex-direction: column; gap: 6px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-dim); font-family: 'IBM Plex Mono', monospace; }
   .whatif-controls input, .whatif-controls select {
@@ -144,10 +144,10 @@
   .wi-gain { font-family: 'IBM Plex Mono', monospace; font-size: 14px; }
   .wi-gain.up { color: var(--teal); }
   .wi-gain.down { color: var(--rust); }
-
+ 
   footer { border-top: 1px solid var(--border); padding: 36px 0; }
   .foot-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; font-size: 12.5px; color: var(--text-dim); line-height: 1.6; }
-
+ 
   @media (max-width: 860px) {
     .stat-row { grid-template-columns: repeat(2, 1fr); }
     .deepdive-grid { grid-template-columns: 1fr; }
@@ -156,9 +156,9 @@
 </style>
 </head>
 <body>
-
+ 
 <div class="tape-outer"><div class="tape-track" id="tape"></div></div>
-
+ 
 <div class="wrap hero">
   <div class="eyebrow">A DECADE ON WALL STREET · 2015–2026</div>
   <h1 class="title">Twenty-five companies, one turbulent decade of gains.</h1>
@@ -169,7 +169,7 @@
   </div>
   <div id="moverBanner"></div>
 </div>
-
+ 
 <div class="wrap">
   <section>
     <div class="section-head">
@@ -184,7 +184,7 @@
       <div class="legend-row" id="legendRow"></div>
     </div>
   </section>
-
+ 
   <section>
     <div class="section-head">
       <div>
@@ -194,7 +194,7 @@
     </div>
     <div class="chart-card"><div id="pulseSection"></div></div>
   </section>
-
+ 
   <section>
     <div class="section-head">
       <div>
@@ -204,7 +204,7 @@
     </div>
     <div class="chart-card"><div class="sector-list" id="sectorList"></div></div>
   </section>
-
+ 
   <section>
     <div class="section-head">
       <div>
@@ -214,7 +214,7 @@
     </div>
     <div class="chart-card" style="overflow-x:auto;"><div id="corrMatrix"></div></div>
   </section>
-
+ 
   <section>
     <div class="section-head">
       <div>
@@ -237,7 +237,7 @@
       </table>
     </div>
   </section>
-
+ 
   <section>
     <div class="section-head">
       <div>
@@ -251,7 +251,7 @@
       <div class="chart-card" id="profileCard"></div>
     </div>
   </section>
-
+ 
   <section>
     <div class="section-head">
       <div>
@@ -275,14 +275,14 @@
     </div>
   </section>
 </div>
-
+ 
 <footer>
   <div class="wrap foot-grid">
     <div><strong style="color:var(--text)">Methodology.</strong> Twenty-five large, widely-held US companies were selected by hand to span major sectors — a curated sample, not the full market. Historical prices are annual closes; "10-yr CAGR" runs 2015 close → 2025 close; "volatility" is the standard deviation of annual returns 2016–2025. The July 2026 snapshot was retrieved from Macrotrends. Live prices, when available, come from Alpha Vantage via an automated daily job — see <span class="mono">data/prices.json</span> for today's snapshot, <span class="mono">data/history.json</span> for the running day-by-day log this page has collected since going live, and the "Update stock prices" GitHub Action in this repo.</div>
     <div><strong style="color:var(--text)">Not financial advice.</strong> Everything here describes what already happened. Past performance is not indicative of future results. High historical growth (NVDA, TSLA) came with equally large drawdowns. Consider your own goals and risk tolerance, and speak with a licensed financial advisor before making investment decisions.</div>
   </div>
 </footer>
-
+ 
 <script>
 /* ---------------------------------------------------------------------
    DATA — 25-company dataset spanning 13 sectors.
@@ -365,17 +365,17 @@ const STOCKS = [
     prices:{2015:11.21,2016:13.86,2017:20.54,2018:20.99,2019:27.09,2020:39.24,2021:61.41,2022:53.26,2023:108.75,2024:228.90,2025:344.80,2026:384.05}},
 ];
 const YEARS = [2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025,2026];
-
+ 
 function annualReturns(prices){ const out=[]; for(let y=2016;y<=2025;y++){ const p=prices[y-1], c=prices[y]; if(p!=null&&c!=null) out.push((c-p)/p*100); } return out; }
 function cagr(prices,y0,y1){ const yrs=y1-y0; return (Math.pow(prices[y1]/prices[y0],1/yrs)-1)*100; }
 function stdev(arr){ const m=arr.reduce((a,b)=>a+b,0)/arr.length; const v=arr.reduce((a,b)=>a+(b-m)**2,0)/(arr.length-1); return Math.sqrt(v); }
 function fmtPct(n,d=1){ return `${n>0?"+":""}${n.toFixed(d)}%`; }
-
+ 
 const ENRICHED = STOCKS.map(s => {
   const returns = annualReturns(s.prices);
   return { ...s, cagr10: cagr(s.prices,2015,2025), vol: stdev(returns), returns };
 });
-
+ 
 const SECTOR_GROUPS = Object.values(ENRICHED.reduce((acc,s)=>{
   acc[s.sector] = acc[s.sector] || { sector:s.sector, members:[] };
   acc[s.sector].members.push(s);
@@ -384,7 +384,7 @@ const SECTOR_GROUPS = Object.values(ENRICHED.reduce((acc,s)=>{
   sector:g.sector, tickers:g.members.map(m=>m.ticker).join(", "),
   avgCagr: g.members.reduce((a,b)=>a+b.cagr10,0)/g.members.length,
 })).sort((a,b)=>b.avgCagr-a.avgCagr);
-
+ 
 /* ---------------------------------------------------------------------
    LIVE PRICES — fetched from data/prices.json (today's snapshot) and
    data/history.json (running daily log), both updated by
@@ -393,7 +393,7 @@ const SECTOR_GROUPS = Object.values(ENRICHED.reduce((acc,s)=>{
 let liveQuotes = {};
 let liveMeta = { generatedAt: null };
 let liveHistory = []; // [{ date: "YYYY-MM-DD", quotes: { TICKER: {price, changePercent} } }, ...] oldest first
-
+ 
 async function loadLivePrices() {
   const statusEl = document.getElementById("liveStatus");
   try {
@@ -402,7 +402,7 @@ async function loadLivePrices() {
     const json = await res.json();
     liveQuotes = json.quotes || {};
     liveMeta.generatedAt = json.generatedAt || null;
-
+ 
     let historyNote = "";
     try {
       const histRes = await fetch("data/history.json?t=" + Date.now());
@@ -420,7 +420,7 @@ async function loadLivePrices() {
       // history is a bonus feature — a failure here shouldn't block the rest of the page
       liveHistory = [];
     }
-
+ 
     if (Object.keys(liveQuotes).length && liveMeta.generatedAt) {
       const d = new Date(liveMeta.generatedAt);
       statusEl.innerHTML = `<span class="live-dot on"></span><span>Live — prices as of ${d.toLocaleString()}${historyNote}</span>`;
@@ -436,7 +436,7 @@ async function loadLivePrices() {
   renderPulse();
   if (document.getElementById("wiTicker").options.length) renderWhatIf();
 }
-
+ 
 /* ---------------------------------------------------------------------
    RENDER: today's biggest mover
 --------------------------------------------------------------------- */
@@ -445,12 +445,12 @@ function renderMoverBanner() {
   const candidates = ENRICHED
     .map(s => ({ s, live: liveQuotes[s.ticker] }))
     .filter(x => x.live && x.live.changePercent != null);
-
+ 
   if (!candidates.length) {
     el.innerHTML = "";
     return;
   }
-
+ 
   const top = candidates.reduce((a, b) => Math.abs(b.live.changePercent) > Math.abs(a.live.changePercent) ? b : a);
   const dir = top.live.changePercent >= 0;
   el.innerHTML = `
@@ -460,7 +460,7 @@ function renderMoverBanner() {
       <span style="color:${dir ? 'var(--teal)' : 'var(--rust)'}">${dir ? "▲" : "▼"} ${fmtPct(top.live.changePercent)}</span>
     </div>`;
 }
-
+ 
 /* ---------------------------------------------------------------------
    RENDER: live pulse — streak badges built from history.json
 --------------------------------------------------------------------- */
@@ -471,7 +471,7 @@ function computeStreaks() {
       .map(day => day.quotes[s.ticker] && day.quotes[s.ticker].changePercent)
       .filter(v => v != null);
     if (daySeries.length < 2) return;
-
+ 
     const latestSign = daySeries[daySeries.length - 1] >= 0;
     let streak = 1;
     for (let i = daySeries.length - 2; i >= 0; i--) {
@@ -482,24 +482,24 @@ function computeStreaks() {
   });
   return streaks.sort((a, b) => b.streak - a.streak);
 }
-
+ 
 function renderPulse() {
   const el = document.getElementById("pulseSection");
   const streaks = computeStreaks();
-
+ 
   if (!streaks.length) {
     const daysLogged = liveHistory.length;
     el.innerHTML = `<div class="pulse-empty">No active streaks yet (needs at least 2 consecutive days moving the same direction). ${daysLogged} day${daysLogged===1?"":"s"} logged so far — check back as more accumulate.</div>`;
     return;
   }
-
+ 
   el.innerHTML = `<div class="pulse-grid">${streaks.map(st => `
     <div class="pulse-badge">
       <span class="pb-ticker" style="color:${st.color}">${st.ticker}</span>
       <span class="pb-streak ${st.up ? "up" : "down"}">${st.up ? "▲" : "▼"} ${st.streak} day${st.streak===1?"":"s"} ${st.up ? "up" : "down"}</span>
     </div>`).join("")}</div>`;
 }
-
+ 
 /* ---------------------------------------------------------------------
    RENDER: ticker tape
 --------------------------------------------------------------------- */
@@ -525,7 +525,7 @@ function renderTape() {
     </span>`;
   }).join("");
 }
-
+ 
 /* ---------------------------------------------------------------------
    RENDER: stat row
 --------------------------------------------------------------------- */
@@ -544,12 +544,12 @@ function renderStatRow() {
     `<div class="stat-card"><div class="stat-label">${label}</div><div class="stat-value" style="color:var(--teal)">${val}</div><div class="stat-sub">${sub}</div></div>`
   ).join("");
 }
-
+ 
 /* ---------------------------------------------------------------------
    RENDER: growth chart (hand-rolled SVG line chart)
 --------------------------------------------------------------------- */
 let hiddenTickers = new Set();
-
+ 
 function renderGrowthChart() {
   const W = 900, H = 420, padL = 64, padR = 10, padT = 14, padB = 30;
   const indexed = YEARS.map(year => {
@@ -560,7 +560,7 @@ function renderGrowthChart() {
   const maxVal = Math.max(...indexed.flatMap(r => ENRICHED.map(s => r[s.ticker])));
   const x = i => padL + (i / (YEARS.length - 1)) * (W - padL - padR);
   const y = v => H - padB - (v / maxVal) * (H - padT - padB);
-
+ 
   let svg = "";
   svg += `<line x1="${padL}" y1="${padT}" x2="${padL}" y2="${H-padB}" stroke="rgba(232,230,222,0.15)" />`;
   svg += `<line x1="${padL}" y1="${H-padB}" x2="${W-padR}" y2="${H-padB}" stroke="rgba(232,230,222,0.15)" />`;
@@ -581,7 +581,7 @@ function renderGrowthChart() {
     svg += `<path d="${d}" fill="none" stroke="${s.color}" stroke-width="1.8" opacity="0.95" />`;
   });
   document.getElementById("growthChart").innerHTML = svg;
-
+ 
   document.getElementById("legendRow").innerHTML = ENRICHED.map(s =>
     `<span class="legend-pill ${hiddenTickers.has(s.ticker)?"":"active"}" data-ticker="${s.ticker}" style="${hiddenTickers.has(s.ticker)?"":`color:${s.color}`}">
       <span class="sw" style="background:${s.color}"></span>${s.ticker}
@@ -595,7 +595,7 @@ function renderGrowthChart() {
     };
   });
 }
-
+ 
 /* ---------------------------------------------------------------------
    RENDER: sector breakdown
 --------------------------------------------------------------------- */
@@ -607,7 +607,7 @@ function renderSectors() {
       <div class="sector-cagr">${fmtPct(g.avgCagr)}</div>
     </div>`).join("");
 }
-
+ 
 /* ---------------------------------------------------------------------
    RENDER: correlation matrix (static — based on 2016–2025 annual returns)
 --------------------------------------------------------------------- */
@@ -625,7 +625,7 @@ function pearson(a, b) {
   const den = Math.sqrt(denA * denB);
   return den === 0 ? 0 : num / den;
 }
-
+ 
 function renderCorrMatrix() {
   const headerRow = `<tr><th></th>${ENRICHED.map(s => `<th>${s.ticker}</th>`).join("")}</tr>`;
   const bodyRows = ENRICHED.map((s1, i) => {
@@ -640,20 +640,20 @@ function renderCorrMatrix() {
   }).join("");
   document.getElementById("corrMatrix").innerHTML = `<table class="corr-table"><thead>${headerRow}</thead><tbody>${bodyRows}</tbody></table>`;
 }
-
+ 
 /* ---------------------------------------------------------------------
    RENDER: what-if calculator (uses live price when available, falls
    back to the July 2026 snapshot otherwise)
 --------------------------------------------------------------------- */
 const WHATIF_YEARS = [2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025];
-
+ 
 function initWhatIf() {
   document.getElementById("wiTicker").innerHTML = ENRICHED.map(s => `<option value="${s.ticker}">${s.ticker} — ${s.name}</option>`).join("");
   document.getElementById("wiYear").innerHTML = WHATIF_YEARS.map(y => `<option value="${y}" ${y===2015?"selected":""}>${y}</option>`).join("");
   ["wiAmount","wiTicker","wiYear"].forEach(id => document.getElementById(id).addEventListener("input", renderWhatIf));
   renderWhatIf();
 }
-
+ 
 function renderWhatIf() {
   const amountRaw = parseFloat(document.getElementById("wiAmount").value);
   const amount = Number.isFinite(amountRaw) && amountRaw > 0 ? amountRaw : 0;
@@ -661,12 +661,12 @@ function renderWhatIf() {
   const year = parseInt(document.getElementById("wiYear").value, 10);
   const s = ENRICHED.find(e => e.ticker === ticker);
   const resultEl = document.getElementById("wiResult");
-
+ 
   if (!s || !amount) {
     resultEl.innerHTML = `<div class="wi-headline">Enter an amount to see the hypothetical.</div>`;
     return;
   }
-
+ 
   const startPrice = s.prices[year];
   const live = liveQuotes[ticker];
   const currentPrice = live ? live.price : s.prices[2026];
@@ -674,13 +674,13 @@ function renderWhatIf() {
   const value = shares * currentPrice;
   const gain = value - amount;
   const gainPct = (gain / amount) * 100;
-
+ 
   resultEl.innerHTML = `
     <div class="wi-headline">$${amount.toLocaleString(undefined,{maximumFractionDigits:0})} in <span style="color:${s.color}">${ticker}</span> since ${year} would be worth</div>
     <div class="wi-value">$${value.toLocaleString(undefined,{maximumFractionDigits:0})}</div>
     <div class="wi-gain ${gain>=0?"up":"down"}">${gain>=0?"+":"-"}$${Math.abs(gain).toLocaleString(undefined,{maximumFractionDigits:0})} (${fmtPct(gainPct)}) · ${live ? "using today's live price" : "using the Jul 2026 snapshot"}</div>`;
 }
-
+ 
 /* ---------------------------------------------------------------------
    RENDER: screener table
 --------------------------------------------------------------------- */
@@ -711,21 +711,21 @@ document.querySelectorAll("th[data-key]").forEach(th => {
     renderScreener();
   };
 });
-
+ 
 /* ---------------------------------------------------------------------
    RENDER: company profile
 --------------------------------------------------------------------- */
 let selectedTicker = "NVDA";
-
+ 
 function buildSparkline(ticker) {
   const points = liveHistory
     .map(day => ({ date: day.date, price: day.quotes[ticker] && day.quotes[ticker].price }))
     .filter(p => p.price != null);
-
+ 
   if (points.length < 2) {
     return `<div class="spark-empty">${points.length === 1 ? "1 day tracked so far — a trend line will appear once there's more history." : "No live tracking history yet."}</div>`;
   }
-
+ 
   const W = 460, H = 60, pad = 4;
   const prices = points.map(p => p.price);
   const min = Math.min(...prices), max = Math.max(...prices);
@@ -734,7 +734,7 @@ function buildSparkline(ticker) {
   const y = v => H - pad - ((v - min) / range) * (H - pad * 2);
   const d = points.map((p, i) => `${i === 0 ? "M" : "L"} ${x(i)} ${y(p.price)}`).join(" ");
   const trendUp = points[points.length - 1].price >= points[0].price;
-
+ 
   return `
     <div class="spark-wrap">
       <svg viewBox="0 0 ${W} ${H}" class="spark-svg">
@@ -744,15 +744,15 @@ function buildSparkline(ticker) {
       <div class="spark-caption">${points[0].date} → ${points[points.length - 1].date} · $${points[0].price.toFixed(2)} → $${points[points.length - 1].price.toFixed(2)}</div>
     </div>`;
 }
-
+ 
 function renderProfile() {
   const s = ENRICHED.find(e => e.ticker === selectedTicker);
-
+ 
   document.getElementById("tickerPills").innerHTML = ENRICHED.map(e =>
     `<span class="pill ${e.ticker===selectedTicker?"active":""}" data-ticker="${e.ticker}" style="${e.ticker===selectedTicker?`background:${e.color}`:""}">${e.ticker}</span>`
   ).join("");
   document.querySelectorAll(".pill").forEach(p => p.onclick = () => { selectedTicker = p.dataset.ticker; renderProfile(); });
-
+ 
   const W=500,H=280,padL=40,padR=10,padT=10,padB=30;
   const vals = s.returns;
   const maxAbs = Math.max(...vals.map(v=>Math.abs(v)), 10);
@@ -767,7 +767,7 @@ function renderProfile() {
     svg += `<text x="${cx}" y="${H-8}" fill="#93A0B8" font-size="11" font-family="IBM Plex Mono, monospace" text-anchor="middle">${2016+i}</text>`;
   });
   document.getElementById("returnsChart").innerHTML = svg;
-
+ 
   const live = liveQuotes[s.ticker];
   document.getElementById("profileCard").innerHTML = `
     <h3 class="dd-name">${s.name} <span style="color:${s.color}">· ${s.ticker}</span></h3>
@@ -788,7 +788,7 @@ function renderProfile() {
       ${buildSparkline(s.ticker)}
     </div>`;
 }
-
+ 
 /* ---------------------------------------------------------------------
    INIT
 --------------------------------------------------------------------- */
@@ -803,4 +803,4 @@ loadLivePrices();
 </script>
 </body>
 </html>
-
+ 
