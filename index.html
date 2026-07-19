@@ -278,14 +278,14 @@
  
 <footer>
   <div class="wrap foot-grid">
-    <div><strong style="color:var(--text)">Methodology.</strong> Twenty-five large, widely-held US companies were selected by hand to span major sectors — a curated sample, not the full market. Historical prices are annual closes; "10-yr CAGR" runs 2015 close → 2025 close; "volatility" is the standard deviation of annual returns 2016–2025. The July 2026 snapshot was retrieved from Macrotrends. Live prices, when available, come from Alpha Vantage via an automated daily job — see <span class="mono">data/prices.json</span> for today's snapshot, <span class="mono">data/history.json</span> for the running day-by-day log this page has collected since going live, and the "Update stock prices" GitHub Action in this repo.</div>
+    <div><strong style="color:var(--text)">Methodology.</strong> Thirty large, widely-held US companies were selected by hand to span major sectors — a curated sample, not the full market. Historical prices are annual closes; "10-yr CAGR" runs 2015 close → 2025 close; "volatility" is the standard deviation of annual returns 2016–2025. The July 2026 snapshot was retrieved from Macrotrends. Live prices, when available, come from Alpha Vantage via an automated daily job — see <span class="mono">data/prices.json</span> for today's snapshot, <span class="mono">data/history.json</span> for the running day-by-day log this page has collected since going live, and the "Update stock prices" GitHub Action in this repo.</div>
     <div><strong style="color:var(--text)">Not financial advice.</strong> Everything here describes what already happened. Past performance is not indicative of future results. High historical growth (NVDA, TSLA) came with equally large drawdowns. Consider your own goals and risk tolerance, and speak with a licensed financial advisor before making investment decisions.</div>
   </div>
 </footer>
  
 <script>
 /* ---------------------------------------------------------------------
-   DATA — 25-company dataset spanning 13 sectors.
+   DATA — 30-company dataset spanning 13 sectors.
 --------------------------------------------------------------------- */
 const STOCKS = [
   { ticker:"AAPL", name:"Apple", sector:"Technology", industry:"Consumer Hardware", marketCap:4631, color:"#2DD4BF",
@@ -363,6 +363,21 @@ const STOCKS = [
   { ticker:"AVGO", name:"Broadcom", sector:"Technology", industry:"Semiconductors", marketCap:1903, color:"#F97316",
     blurb:"From a mid-cap chipmaker to a nearly $2 trillion AI infrastructure supplier — three straight years of triple-digit or near-triple-digit gains from 2023 to 2025 before cooling off in 2026.",
     prices:{2015:11.21,2016:13.86,2017:20.54,2018:20.99,2019:27.09,2020:39.24,2021:61.41,2022:53.26,2023:108.75,2024:228.90,2025:344.80,2026:384.05}},
+  { ticker:"NFLX", name:"Netflix", sector:"Communication Services", industry:"Streaming", marketCap:310, color:"#E11D48",
+    blurb:"The original streaming disruptor. A 51% crash in 2022 as subscriber growth stalled, then two years of strong recovery fueled by an ad-supported tier and a password-sharing crackdown — before cooling again in 2026.",
+    prices:{2015:11.44,2016:12.38,2017:19.20,2018:26.77,2019:32.36,2020:54.07,2021:60.24,2022:29.49,2023:48.69,2024:89.13,2025:93.76,2026:74.35}},
+  { ticker:"AMD", name:"AMD", sector:"Technology", industry:"Semiconductors", marketCap:863, color:"#34D399",
+    blurb:"NVIDIA's chief rival in AI chips. A 295% year in 2016 kicked off a decade-long transformation from a struggling chipmaker to a serious data-center contender — with a monster 2026 surge as AI demand broadened.",
+    prices:{2015:2.87,2016:11.34,2017:10.28,2018:18.46,2019:45.86,2020:91.71,2021:143.90,2022:64.77,2023:147.41,2024:120.79,2025:214.16,2026:500.94}},
+  { ticker:"COST", name:"Costco", sector:"Retail", industry:"Warehouse Clubs", marketCap:420, color:"#D946EF",
+    blurb:"Membership-model retail at its best. Steady compounding through almost any environment — even 2022's broad sell-off only dented it 19% before a quick recovery.",
+    prices:{2015:135.51,2016:135.89,2017:166.29,2018:183.91,2019:267.96,2020:355.50,2021:539.72,2022:436.91,2023:651.01,2024:908.95,2025:859.92,2026:940.87}},
+  { ticker:"CRM", name:"Salesforce", sector:"Technology", industry:"Cloud Software", marketCap:134, color:"#60A5FA",
+    blurb:"The cloud CRM pioneer. A brutal 48% drop in 2022 was followed by a near-doubling in 2023 as profitability became the focus — but AI spending fears have weighed heavily in 2025–2026.",
+    prices:{2015:77.72,2016:67.87,2017:101.34,2018:135.78,2019:161.23,2020:220.60,2021:251.92,2022:131.44,2023:260.85,2024:333.28,2025:260.00,2026:170.00}},
+  { ticker:"BRK.B", name:"Berkshire Hathaway", sector:"Finance", industry:"Conglomerate", marketCap:1100, color:"#A3E635",
+    blurb:"Warren Buffett's conglomerate — insurance, railroads, energy, and a massive stock portfolio. The steadiest compounder in this set alongside KO, with only one down year (2015) in the entire decade.",
+    prices:{2015:132.04,2016:162.98,2017:198.22,2018:204.18,2019:226.50,2020:231.87,2021:299.00,2022:308.90,2023:356.66,2024:453.28,2025:502.65,2026:495.00}},
 ];
 const YEARS = [2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025,2026];
  
