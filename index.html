@@ -198,6 +198,16 @@
   <section>
     <div class="section-head">
       <div>
+        <h2 class="section-title">Risk vs. return</h2>
+        <div class="section-sub">10-yr CAGR (vertical) against volatility (horizontal). Top-left is the sweet spot: high return, low swings. Hover a dot for details.</div>
+      </div>
+    </div>
+    <div class="chart-card"><svg id="riskReturnChart" viewBox="0 0 900 460" style="width:100%; height:460px;"></svg></div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <div>
         <h2 class="section-title">By sector</h2>
         <div class="section-sub">Average 10-year CAGR of the companies in each sector bucket.</div>
       </div>
@@ -550,14 +560,21 @@ function renderStatRow() {
   const mostVol = ENRICHED.reduce((a,b)=>b.vol>a.vol?b:a);
   const steadiest = ENRICHED.reduce((a,b)=>b.vol<a.vol?b:a);
   const cards = [
-    ["Best 10-yr CAGR", fmtPct(best.cagr10), `${best.ticker} — ${best.name}`],
-    ["Weakest 10-yr CAGR", fmtPct(worst.cagr10), `${worst.ticker} — ${worst.name}`],
-    ["Most volatile", `${mostVol.vol.toFixed(0)} pts`, `${mostVol.ticker} — std. dev of annual returns`],
-    ["Steadiest", `${steadiest.vol.toFixed(0)} pts`, `${steadiest.ticker} — std. dev of annual returns`],
+    ["Best 10-yr CAGR", fmtPct(best.cagr10), `${best.ticker} — ${best.name}`, best.ticker],
+    ["Weakest 10-yr CAGR", fmtPct(worst.cagr10), `${worst.ticker} — ${worst.name}`, worst.ticker],
+    ["Most volatile", `${mostVol.vol.toFixed(0)} pts`, `${mostVol.ticker} — std. dev of annual returns`, mostVol.ticker],
+    ["Steadiest", `${steadiest.vol.toFixed(0)} pts`, `${steadiest.ticker} — std. dev of annual returns`, steadiest.ticker],
   ];
-  document.getElementById("statRow").innerHTML = cards.map(([label,val,sub]) =>
-    `<div class="stat-card"><div class="stat-label">${label}</div><div class="stat-value" style="color:var(--teal)">${val}</div><div class="stat-sub">${sub}</div></div>`
+  document.getElementById("statRow").innerHTML = cards.map(([label,val,sub,ticker]) =>
+    `<div class="stat-card" data-ticker="${ticker}" style="cursor:pointer" title="Jump to ${ticker}'s profile"><div class="stat-label">${label}</div><div class="stat-value" style="color:var(--teal)">${val}</div><div class="stat-sub">${sub}</div></div>`
   ).join("");
+  document.querySelectorAll(".stat-card").forEach(card => {
+    card.onclick = () => {
+      selectedTicker = card.dataset.ticker;
+      renderProfile();
+      document.getElementById("tickerPills").scrollIntoView({ behavior: "smooth", block: "center" });
+    };
+  });
 }
  
 /* ---------------------------------------------------------------------
@@ -611,6 +628,43 @@ function renderGrowthChart() {
   });
 }
  
+/* ---------------------------------------------------------------------
+   RENDER: risk vs. return scatter (CAGR vs. volatility)
+--------------------------------------------------------------------- */
+function renderRiskReturn() {
+  const W = 900, H = 460, padL = 64, padR = 24, padT = 20, padB = 46;
+  const xs = ENRICHED.map(s => s.vol), ys = ENRICHED.map(s => s.cagr10);
+  const xMin = 0, xMax = Math.max(...xs) * 1.08;
+  const yMin = Math.min(0, Math.min(...ys)) * 1.15, yMax = Math.max(...ys) * 1.1;
+  const x = v => padL + (v - xMin) / (xMax - xMin) * (W - padL - padR);
+  const y = v => H - padB - (v - yMin) / (yMax - yMin) * (H - padT - padB);
+
+  let svg = "";
+  svg += `<line x1="${padL}" y1="${padT}" x2="${padL}" y2="${H-padB}" stroke="rgba(232,230,222,0.15)" />`;
+  svg += `<line x1="${padL}" y1="${H-padB}" x2="${W-padR}" y2="${H-padB}" stroke="rgba(232,230,222,0.15)" />`;
+  if (yMin < 0) svg += `<line x1="${padL}" y1="${y(0)}" x2="${W-padR}" y2="${y(0)}" stroke="rgba(232,230,222,0.10)" stroke-dasharray="4 4" />`;
+  for (let g = 0; g <= 4; g++) {
+    const val = yMin + (yMax - yMin) * (4 - g) / 4;
+    const gy = padT + g * (H - padT - padB) / 4;
+    svg += `<text x="${padL-8}" y="${gy+4}" fill="#93A0B8" font-size="11" font-family="IBM Plex Mono, monospace" text-anchor="end">${val.toFixed(0)}%</text>`;
+  }
+  for (let g = 0; g <= 4; g++) {
+    const val = xMin + (xMax - xMin) * g / 4;
+    const gx = padL + g * (W - padL - padR) / 4;
+    svg += `<text x="${gx}" y="${H-padB+20}" fill="#93A0B8" font-size="11" font-family="IBM Plex Mono, monospace" text-anchor="middle">${val.toFixed(0)}</text>`;
+  }
+  svg += `<text transform="rotate(-90)" x="-${(H-padT-padB)/2+padT}" y="15" fill="#93A0B8" font-size="10.5" font-family="IBM Plex Mono, monospace" text-anchor="middle">10-yr CAGR</text>`;
+  svg += `<text x="${padL+(W-padL-padR)/2}" y="${H-6}" fill="#93A0B8" font-size="10.5" font-family="IBM Plex Mono, monospace" text-anchor="middle">Volatility (std. dev of annual returns, pts)</text>`;
+
+  ENRICHED.forEach(s => {
+    const cx = x(s.vol), cy = y(s.cagr10);
+    svg += `<circle cx="${cx}" cy="${cy}" r="6" fill="${s.color}" opacity="0.9"><title>${s.ticker} — ${s.name}: ${fmtPct(s.cagr10)} CAGR, ${s.vol.toFixed(0)} pts volatility</title></circle>`;
+    svg += `<text x="${cx}" y="${cy-11}" fill="${s.color}" font-size="10.5" font-family="IBM Plex Mono, monospace" text-anchor="middle">${s.ticker}</text>`;
+  });
+
+  document.getElementById("riskReturnChart").innerHTML = svg;
+}
+
 /* ---------------------------------------------------------------------
    RENDER: sector breakdown
 --------------------------------------------------------------------- */
@@ -809,6 +863,7 @@ function renderProfile() {
 --------------------------------------------------------------------- */
 renderStatRow();
 renderGrowthChart();
+renderRiskReturn();
 renderSectors();
 renderCorrMatrix();
 renderScreener();
