@@ -67,6 +67,12 @@
         <div class="section-sub">Ranked by historical 10-year CAGR — describes the past, not a forecast. Click any row to open its profile below.</div>
       </div>
     </div>
+    <div class="whatif-controls" style="margin-bottom:12px;">
+      <label style="flex:1; min-width:200px;">Search
+        <input type="text" id="screenerSearch" placeholder="Ticker, name, or sector…" style="width:100%;">
+      </label>
+      <button id="exportCsvBtn" class="pill" style="cursor:pointer; border:none; padding:9px 16px; align-self:flex-end;">⬇ Export CSV</button>
+    </div>
     <div class="chart-card" style="padding:0; overflow-x:auto;">
       <table class="screener">
         <thead>
@@ -241,24 +247,72 @@ function renderCorrMatrix() {
    RENDER: screener table
 --------------------------------------------------------------------- */
 let sortKey = "cagr10", sortDir = "desc";
-function renderScreener() {
-  const rows = [...ENRICHED].sort((a,b) => {
+let screenerQuery = "";
+ 
+function filteredSortedRows() {
+  const q = screenerQuery.trim().toLowerCase();
+  const filtered = q
+    ? ENRICHED.filter(s => s.ticker.toLowerCase().includes(q) || s.name.toLowerCase().includes(q) || s.sector.toLowerCase().includes(q))
+    : [...ENRICHED];
+  return filtered.sort((a,b) => {
     const va=a[sortKey], vb=b[sortKey];
     const cmp = typeof va === "string" ? va.localeCompare(vb) : va-vb;
     return sortDir==="asc" ? cmp : -cmp;
   });
-  document.getElementById("screenerBody").innerHTML = rows.map(s => `
+}
+ 
+function renderScreener() {
+  const rows = filteredSortedRows();
+  document.getElementById("screenerBody").innerHTML = rows.length
+    ? rows.map(s => `
     <tr class="row" data-ticker="${s.ticker}">
       <td><div class="row-ticker" style="color:${s.color}">${s.ticker}</div><div class="row-name">${s.name}</div></td>
       <td><span class="sector-tag">${s.sector}</span></td>
       <td class="cell-num ${s.cagr10>=0?"up":"down"}">${fmtPct(s.cagr10)}</td>
       <td class="cell-num">${s.vol.toFixed(0)} pts</td>
       <td class="cell-num">$${s.marketCap.toLocaleString()}B</td>
-    </tr>`).join("");
+    </tr>`).join("")
+    : `<tr><td colspan="5" style="text-align:center; padding:24px; color:var(--text-dim);">No companies match "${screenerQuery}"</td></tr>`;
   document.querySelectorAll("tr.row").forEach(tr => {
     tr.onclick = () => { selectedTicker = tr.dataset.ticker; renderProfile(); document.getElementById("tickerPills").scrollIntoView({behavior:"smooth", block:"center"}); };
   });
 }
+ 
+document.getElementById("screenerSearch").addEventListener("input", (e) => {
+  screenerQuery = e.target.value;
+  renderScreener();
+});
+ 
+/* ---------------------------------------------------------------------
+   CSV export — exports whatever the screener is currently showing
+   (respects the active search filter and sort order)
+--------------------------------------------------------------------- */
+function toCsvValue(v) {
+  const s = String(v);
+  return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+}
+ 
+function exportScreenerCsv() {
+  const rows = filteredSortedRows();
+  const header = ["Ticker", "Name", "Sector", "Industry", "10yr CAGR %", "Volatility (pts)", "Market Cap ($B)"];
+  const lines = [header.map(toCsvValue).join(",")];
+  rows.forEach(s => {
+    lines.push([s.ticker, s.name, s.sector, s.industry, s.cagr10.toFixed(2), s.vol.toFixed(1), s.marketCap].map(toCsvValue).join(","));
+  });
+  const csv = lines.join("\n");
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = screenerQuery ? `screener-${screenerQuery.trim().replace(/\s+/g,"-")}.csv` : "screener.csv";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+ 
+document.getElementById("exportCsvBtn").addEventListener("click", exportScreenerCsv);
+ 
 document.querySelectorAll("th[data-key]").forEach(th => {
   th.onclick = () => {
     const key = th.dataset.key;
@@ -391,5 +445,6 @@ loadLivePrices();
 </script>
 </body>
 </html>
+ 
  
  
