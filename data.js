@@ -161,9 +161,9 @@ async function loadLivePrices() {
     if (statusEl) {
       if (Object.keys(liveQuotes).length && liveMeta.generatedAt) {
         const d = new Date(liveMeta.generatedAt);
-        statusEl.innerHTML = `<span class="live-dot on"></span><span>Live — prices as of ${d.toLocaleString()}${historyNote}</span>`;
+        statusEl.innerHTML = `<span class="live-dot on"></span><span>End-of-day price — as of market close ${d.toLocaleDateString()}${historyNote}</span>`;
       } else {
-        statusEl.innerHTML = `<span class="live-dot off"></span><span>No live data yet — showing the July 2026 snapshot (first automated update runs on the next scheduled job)</span>`;
+        statusEl.innerHTML = `<span class="live-dot off"></span><span>No end-of-day data yet — showing the July 2026 snapshot (first automated update runs on the next scheduled job)</span>`;
       }
     }
   } catch (err) {
@@ -178,3 +178,4 @@ async function loadLivePrices() {
   if (typeof renderPortfolio === "function" && document.getElementById("pfResult")) renderPortfolio();
   if (typeof renderDCA === "function" && document.getElementById("dcaResult") && document.getElementById("dcaTicker").options.length) renderDCA();
 }
+ 
