@@ -198,7 +198,7 @@ function renderWhatIf() {
   resultEl.innerHTML = `
     <div class="wi-headline">$${amount.toLocaleString(undefined,{maximumFractionDigits:0})} in <span style="color:${s.color}">${ticker}</span> since ${year} would be worth</div>
     <div class="wi-value">$${value.toLocaleString(undefined,{maximumFractionDigits:0})}</div>
-    <div class="wi-gain ${gain>=0?"up":"down"}">${gain>=0?"+":"-"}$${Math.abs(gain).toLocaleString(undefined,{maximumFractionDigits:0})} (${fmtPct(gainPct)}) · ${live ? "using today's live price" : "using the Jul 2026 snapshot"}</div>`;
+    <div class="wi-gain ${gain>=0?"up":"down"}">${gain>=0?"+":"-"}$${Math.abs(gain).toLocaleString(undefined,{maximumFractionDigits:0})} (${fmtPct(gainPct)}) · ${live ? "using the latest close" : "using the Jul 2026 snapshot"}</div>`;
 }
  
 /* ---------------------------------------------------------------------
@@ -342,7 +342,7 @@ function renderDCA() {
         <div class="wi-gain ${lumpGain>=0?"up":"down"}">${lumpGain>=0?"+":"-"}$${Math.abs(lumpGain).toLocaleString(undefined,{maximumFractionDigits:0})} (${fmtPct(lumpGainPct)})</div>
       </div>
     </div>
-    <div class="spark-caption" style="margin-top:14px;">${winner} came out ahead here by $${Math.abs(dcaValue-lumpValue).toLocaleString(undefined,{maximumFractionDigits:0})} · ${live ? "using today's live price" : "using the Jul 2026 snapshot"}</div>`;
+    <div class="spark-caption" style="margin-top:14px;">${winner} came out ahead here by $${Math.abs(dcaValue-lumpValue).toLocaleString(undefined,{maximumFractionDigits:0})} · ${live ? "using the latest close" : "using the Jul 2026 snapshot"}</div>`;
 }
  
 /* ---------------------------------------------------------------------
@@ -390,4 +390,5 @@ loadLivePrices();
 </script>
 </body>
 </html>
+ 
  
