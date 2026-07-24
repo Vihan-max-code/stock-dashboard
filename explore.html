@@ -87,7 +87,7 @@
     <div class="section-head">
       <div>
         <h2 class="section-title">Company profile</h2>
-        <div class="section-sub">Annual returns and the story behind them, plus today's live price.</div>
+        <div class="section-sub">Annual returns and the story behind them, plus the latest end-of-day close.</div>
       </div>
     </div>
     <div class="ticker-pills" id="tickerPills"></div>
@@ -122,7 +122,7 @@
  
 <footer>
   <div class="wrap foot-grid">
-    <div><strong style="color:var(--text)">Methodology.</strong> Thirty large, widely-held US companies were selected by hand to span major sectors — a curated sample, not the full market. Historical prices are annual closes; "10-yr CAGR" runs 2015 close → 2025 close; "volatility" is the standard deviation of annual returns 2016–2025. The July 2026 snapshot was retrieved from Macrotrends. Live prices, when available, come from Alpha Vantage via an automated daily job — see <span class="mono">data/prices.json</span> for today's snapshot, <span class="mono">data/history.json</span> for the running day-by-day log this page has collected since going live, and the "Update stock prices" GitHub Action in this repo.</div>
+    <div><strong style="color:var(--text)">Methodology.</strong> Thirty large, widely-held US companies were selected by hand to span major sectors — a curated sample, not the full market. Historical prices are annual closes; "10-yr CAGR" runs 2015 close → 2025 close; "volatility" is the standard deviation of annual returns 2016–2025. The July 2026 snapshot was retrieved from Macrotrends. End-of-day closing prices, when available, come from Alpha Vantage via an automated job that runs after market close each weekday (Alpha Vantage's free tier doesn't offer intraday or real-time data) — see <span class="mono">data/prices.json</span> for today's snapshot, <span class="mono">data/history.json</span> for the running day-by-day log this page has collected since going live, and the "Update stock prices" GitHub Action in this repo.</div>
     <div><strong style="color:var(--text)">Not financial advice.</strong> Everything here describes what already happened. Past performance is not indicative of future results. High historical growth (NVDA, TSLA) came with equally large drawdowns. Consider your own goals and risk tolerance, and speak with a licensed financial advisor before making investment decisions.</div>
   </div>
 </footer>
@@ -335,7 +335,7 @@ function renderProfile() {
       <div><div class="dd-stat-label">10-yr CAGR</div><div class="dd-stat-value">${fmtPct(s.cagr10)}</div></div>
       <div><div class="dd-stat-label">Volatility</div><div class="dd-stat-value">${s.vol.toFixed(0)} pts</div></div>
       <div>
-        <div class="dd-stat-label">${live ? '<span style="color:var(--teal)">● Live price</span>' : "Current price (Jul 2026 snapshot)"}</div>
+        <div class="dd-stat-label">${live ? '<span style="color:var(--teal)">● Latest close</span>' : "Current price (Jul 2026 snapshot)"}</div>
         <div class="dd-stat-value">$${(live ? live.price : s.prices[2026]).toFixed(2)}</div>
         ${live && live.changePercent!=null ? `<div class="dd-stat-delta" style="color:${live.changePercent>=0?'var(--teal)':'var(--rust)'}">${fmtPct(live.changePercent)} today</div>` : ""}
       </div>
@@ -391,4 +391,5 @@ loadLivePrices();
 </script>
 </body>
 </html>
+ 
  
