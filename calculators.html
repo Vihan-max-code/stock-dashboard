@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A Decade on Wall Street — Calculators</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+ 
+<nav class="site-nav">
+  <div class="site-nav-inner">
+    <a href="index.html" class="site-nav-brand">A Decade on Wall Street</a>
+    <div class="site-nav-links">
+      <a href="index.html">Overview</a>
+      <a href="explore.html">Explore</a>
+      <a href="calculators.html" class="active">Calculators</a>
+    </div>
+  </div>
+</nav>
+ 
+<div class="tape-outer"><div class="tape-track" id="tape"></div></div>
+ 
+<div class="wrap hero" style="padding: 40px 0 24px;">
+  <div class="eyebrow">CALCULATORS</div>
+  <h1 class="title" style="font-size: clamp(1.8rem, 4vw, 2.6rem);">Hypotheticals, built from the historical data.</h1>
+  <p class="lede">All of these use the same annual-close dataset as the rest of the site. They describe what already happened — not a projection of future returns, and not investment advice.</p>
+</div>
+ 
+<div class="wrap">
+  <section>
+    <div class="section-head">
+      <div>
+        <h2 class="section-title">What if you'd invested?</h2>
+        <div class="section-sub">A single lump-sum hypothetical using the historical annual closes.</div>
+      </div>
+    </div>
+    <div class="chart-card">
+      <div class="whatif-controls">
+        <label>Amount
+          <input type="number" id="wiAmount" value="1000" min="1" step="100">
+        </label>
+        <label>In
+          <select id="wiTicker"></select>
+        </label>
+        <label>Starting
+          <select id="wiYear"></select>
+        </label>
+      </div>
+      <div id="wiResult"></div>
+    </div>
+  </section>
+ 
+  <section>
+    <div class="section-head">
+      <div>
+        <h2 class="section-title">Build a portfolio</h2>
+        <div class="section-sub">Pick a few companies and a starting amount to see a blended, indexed performance line — an equal-weight mix rebalanced only at the start.</div>
+      </div>
+    </div>
+    <div class="chart-card">
+      <div class="whatif-controls" style="align-items:flex-start;">
+        <label style="min-width:100%">Pick companies (2–6)
+          <div class="ticker-pills" id="pfPills" style="margin-top:2px"></div>
+        </label>
+      </div>
+      <div class="whatif-controls">
+        <label>Amount
+          <input type="number" id="pfAmount" value="10000" min="1" step="500">
+        </label>
+        <label>Starting
+          <select id="pfYear"></select>
+        </label>
+      </div>
+      <div id="pfResult" style="margin-bottom:16px"></div>
+      <svg id="portfolioChart" viewBox="0 0 900 320" style="width:100%; height:320px;"></svg>
+    </div>
+  </section>
+ 
+  <section>
+    <div class="section-head">
+      <div>
+        <h2 class="section-title">Lump sum vs. drip-feeding it in</h2>
+        <div class="section-sub">Investing a fixed amount every year (dollar-cost averaging) instead of all at once. Which wins depends entirely on the path the price took.</div>
+      </div>
+    </div>
+    <div class="chart-card">
+      <div class="whatif-controls">
+        <label>Invest per year
+          <input type="number" id="dcaAmount" value="1000" min="1" step="100">
+        </label>
+        <label>In
+          <select id="dcaTicker"></select>
+        </label>
+        <label>Starting
+          <select id="dcaYear"></select>
+        </label>
+      </div>
+      <div id="dcaResult"></div>
+    </div>
+  </section>
+ 
+  <section>
+    <div class="section-head">
+      <div>
+        <h2 class="section-title">Reaching a goal</h2>
+        <div class="section-sub">Working backwards: if this company's historical CAGR had continued, how much would you have needed to invest to hit a target?</div>
+      </div>
+    </div>
+    <div class="chart-card">
+      <div class="whatif-controls">
+        <label>Target amount
+          <input type="number" id="goalTarget" value="1000000" min="1" step="10000">
+        </label>
+        <label>In
+          <select id="goalTicker"></select>
+        </label>
+        <label>Years to grow
+          <input type="number" id="goalYears" value="10" min="1" max="50" step="1">
+        </label>
+      </div>
+      <div id="goalResult"></div>
+    </div>
+  </section>
+</div>
+ 
+<footer>
+  <div class="wrap foot-grid">
+    <div><strong style="color:var(--text)">Methodology.</strong> All calculators use the same annual-close dataset covering 2015–2026 for thirty large, widely-held US companies. Full methodology on the <a href="explore.html" style="color:var(--teal)">Explore</a> page.</div>
+    <div><strong style="color:var(--text)">Not financial advice.</strong> These are illustrative hypotheticals based on what already happened. Past performance is not indicative of future results — none of this assumes any particular growth rate will continue. Speak with a licensed financial advisor before making investment decisions.</div>
+  </div>
+</footer>
+ 
+<script src="data.js"></script>
+<script>
+/* ---------------------------------------------------------------------
+   RENDER: ticker tape (same as other pages, kept for consistency)
+--------------------------------------------------------------------- */
+function renderTape() {
+  const tape = document.getElementById("tape");
+  const items = [...ENRICHED, ...ENRICHED];
+  tape.innerHTML = items.map(s => {
+    const live = liveQuotes[s.ticker];
+    if (live) {
+      const dir = live.changePercent == null ? null : live.changePercent >= 0;
+      return `<span class="tape-item">
+        <span class="live-pip"></span>
+        <span class="tape-ticker">${s.ticker}</span>
+        <span class="tape-price">$${live.price.toFixed(2)}</span>
+        ${dir !== null ? `<span class="tape-val ${dir?"up":"down"}">${dir?"▲":"▼"} ${fmtPct(live.changePercent)}</span>` : ""}
+        <span class="tape-dot">•</span>
+      </span>`;
+    }
+    return `<span class="tape-item">
+      <span class="tape-ticker">${s.ticker}</span>
+      <span class="tape-val muted ${s.cagr10>=0?"up":"down"}">${s.cagr10>=0?"▲":"▼"} ${fmtPct(s.cagr10)} · 10y</span>
+      <span class="tape-dot">•</span>
+    </span>`;
+  }).join("");
+}
+ 
+/* ---------------------------------------------------------------------
+   RENDER: what-if calculator (uses live price when available, falls
+   back to the July 2026 snapshot otherwise)
+--------------------------------------------------------------------- */
+const WHATIF_YEARS = [2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025];
+ 
+function initWhatIf() {
+  document.getElementById("wiTicker").innerHTML = ENRICHED.map(s => `<option value="${s.ticker}">${s.ticker} — ${s.name}</option>`).join("");
+  document.getElementById("wiYear").innerHTML = WHATIF_YEARS.map(y => `<option value="${y}" ${y===2015?"selected":""}>${y}</option>`).join("");
+  ["wiAmount","wiTicker","wiYear"].forEach(id => document.getElementById(id).addEventListener("input", renderWhatIf));
+  renderWhatIf();
+}
+ 
+function renderWhatIf() {
+  const amountRaw = parseFloat(document.getElementById("wiAmount").value);
+  const amount = Number.isFinite(amountRaw) && amountRaw > 0 ? amountRaw : 0;
+  const ticker = document.getElementById("wiTicker").value;
+  const year = parseInt(document.getElementById("wiYear").value, 10);
+  const s = ENRICHED.find(e => e.ticker === ticker);
+  const resultEl = document.getElementById("wiResult");
+ 
+  if (!s || !amount) {
+    resultEl.innerHTML = `<div class="wi-headline">Enter an amount to see the hypothetical.</div>`;
+    return;
+  }
+ 
+  const startPrice = s.prices[year];
+  const live = liveQuotes[ticker];
+  const currentPrice = live ? live.price : s.prices[2026];
+  const shares = amount / startPrice;
+  const value = shares * currentPrice;
+  const gain = value - amount;
+  const gainPct = (gain / amount) * 100;
+ 
+  resultEl.innerHTML = `
+    <div class="wi-headline">$${amount.toLocaleString(undefined,{maximumFractionDigits:0})} in <span style="color:${s.color}">${ticker}</span> since ${year} would be worth</div>
+    <div class="wi-value">$${value.toLocaleString(undefined,{maximumFractionDigits:0})}</div>
+    <div class="wi-gain ${gain>=0?"up":"down"}">${gain>=0?"+":"-"}$${Math.abs(gain).toLocaleString(undefined,{maximumFractionDigits:0})} (${fmtPct(gainPct)}) · ${live ? "using today's live price" : "using the Jul 2026 snapshot"}</div>`;
+}
+ 
+/* ---------------------------------------------------------------------
+   RENDER: portfolio builder (equal-weight blend, rebalanced only at start)
+--------------------------------------------------------------------- */
+let pfSelected = new Set(["AAPL", "NVDA", "KO"]);
+ 
+function initPortfolio() {
+  document.getElementById("pfYear").innerHTML = WHATIF_YEARS.map(y => `<option value="${y}" ${y===2015?"selected":""}>${y}</option>`).join("");
+  document.getElementById("pfPills").innerHTML = ENRICHED.map(s => `
+    <span class="legend-pill ${pfSelected.has(s.ticker)?"active":""}" data-ticker="${s.ticker}" style="cursor:pointer; ${pfSelected.has(s.ticker)?`color:${s.color}`:""}">
+      <span class="sw" style="background:${s.color}"></span>${s.ticker}
+    </span>`).join("");
+  document.querySelectorAll("#pfPills .legend-pill").forEach(pill => {
+    pill.onclick = () => {
+      const t = pill.dataset.ticker;
+      if (pfSelected.has(t)) {
+        pfSelected.delete(t);
+      } else if (pfSelected.size < 6) {
+        pfSelected.add(t);
+      }
+      initPortfolio();
+      renderPortfolio();
+    };
+  });
+  ["pfAmount","pfYear"].forEach(id => document.getElementById(id).addEventListener("input", renderPortfolio));
+}
+ 
+function renderPortfolio() {
+  const amountRaw = parseFloat(document.getElementById("pfAmount").value);
+  const amount = Number.isFinite(amountRaw) && amountRaw > 0 ? amountRaw : 0;
+  const year = parseInt(document.getElementById("pfYear").value, 10);
+  const picks = ENRICHED.filter(s => pfSelected.has(s.ticker));
+  const resultEl = document.getElementById("pfResult");
+  const svgEl = document.getElementById("portfolioChart");
+ 
+  if (picks.length < 2 || !amount) {
+    resultEl.innerHTML = `<div class="wi-headline">Pick at least 2 companies and an amount to see the blend.</div>`;
+    svgEl.innerHTML = "";
+    return;
+  }
+ 
+  const perStock = amount / picks.length;
+  const pfYears = YEARS.filter(y => y >= year);
+  const series = pfYears.map(y => {
+    const total = picks.reduce((sum, s) => {
+      const live = liveQuotes[s.ticker];
+      const price = (y === 2026 && live) ? live.price : s.prices[y];
+      const startPrice = s.prices[year];
+      return sum + (perStock / startPrice) * price;
+    }, 0);
+    return { year: y, value: total };
+  });
+ 
+  const endVal = series[series.length - 1].value;
+  const gain = endVal - amount;
+  const gainPct = (gain / amount) * 100;
+ 
+  resultEl.innerHTML = `
+    <div class="wi-headline">$${amount.toLocaleString(undefined,{maximumFractionDigits:0})} split evenly across ${picks.map(s=>s.ticker).join(", ")} since ${year} would be worth</div>
+    <div class="wi-value">$${endVal.toLocaleString(undefined,{maximumFractionDigits:0})}</div>
+    <div class="wi-gain ${gain>=0?"up":"down"}">${gain>=0?"+":"-"}$${Math.abs(gain).toLocaleString(undefined,{maximumFractionDigits:0})} (${fmtPct(gainPct)})</div>`;
+ 
+  const W = 900, H = 320, padL = 64, padR = 10, padT = 14, padB = 30;
+  const maxVal = Math.max(...series.map(p => p.value), amount);
+  const x = i => padL + (i / (pfYears.length - 1 || 1)) * (W - padL - padR);
+  const y = v => H - padB - (v / maxVal) * (H - padT - padB);
+ 
+  let svg = "";
+  svg += `<line x1="${padL}" y1="${padT}" x2="${padL}" y2="${H-padB}" stroke="rgba(232,230,222,0.15)" />`;
+  svg += `<line x1="${padL}" y1="${H-padB}" x2="${W-padR}" y2="${H-padB}" stroke="rgba(232,230,222,0.15)" />`;
+  for (let g = 0; g <= 4; g++) {
+    const gy = padT + g * (H - padT - padB) / 4;
+    svg += `<line x1="${padL}" y1="${gy}" x2="${W-padR}" y2="${gy}" stroke="rgba(232,230,222,0.06)" />`;
+    const val = Math.round(maxVal * (4 - g) / 4);
+    const label = val >= 1000 ? "$" + (val/1000).toFixed(0) + "k" : "$" + val;
+    svg += `<text x="${padL-8}" y="${gy+4}" fill="#93A0B8" font-size="11" font-family="IBM Plex Mono, monospace" text-anchor="end">${label}</text>`;
+  }
+  pfYears.forEach((yr,i) => {
+    svg += `<text x="${x(i)}" y="${H-8}" fill="#93A0B8" font-size="12" font-family="IBM Plex Mono, monospace" text-anchor="middle">${yr}</text>`;
+  });
+  const d = series.map((p,i) => `${i===0?"M":"L"} ${x(i)} ${y(p.value)}`).join(" ");
+  svg += `<path d="${d}" fill="none" stroke="var(--teal)" stroke-width="2.5" />`;
+  series.forEach((p,i) => { svg += `<circle cx="${x(i)}" cy="${y(p.value)}" r="3" fill="var(--teal)"><title>${p.year}: $${p.value.toLocaleString(undefined,{maximumFractionDigits:0})}</title></circle>`; });
+ 
+  svgEl.innerHTML = svg;
+}
+ 
+/* ---------------------------------------------------------------------
+   RENDER: dollar-cost averaging calculator
+--------------------------------------------------------------------- */
+function initDCA() {
+  document.getElementById("dcaTicker").innerHTML = ENRICHED.map(s => `<option value="${s.ticker}" ${s.ticker==="NVDA"?"selected":""}>${s.ticker} — ${s.name}</option>`).join("");
+  document.getElementById("dcaYear").innerHTML = WHATIF_YEARS.map(y => `<option value="${y}" ${y===2015?"selected":""}>${y}</option>`).join("");
+  ["dcaAmount","dcaTicker","dcaYear"].forEach(id => document.getElementById(id).addEventListener("input", renderDCA));
+  renderDCA();
+}
+ 
+function renderDCA() {
+  const amountRaw = parseFloat(document.getElementById("dcaAmount").value);
+  const perYear = Number.isFinite(amountRaw) && amountRaw > 0 ? amountRaw : 0;
+  const ticker = document.getElementById("dcaTicker").value;
+  const startYear = parseInt(document.getElementById("dcaYear").value, 10);
+  const s = ENRICHED.find(e => e.ticker === ticker);
+  const resultEl = document.getElementById("dcaResult");
+ 
+  if (!s || !perYear) {
+    resultEl.innerHTML = `<div class="wi-headline">Enter an amount to see the comparison.</div>`;
+    return;
+  }
+ 
+  const investYears = YEARS.filter(y => y >= startYear && y <= 2025);
+  const live = liveQuotes[ticker];
+  const currentPrice = live ? live.price : s.prices[2026];
+ 
+  let dcaShares = 0, dcaInvested = 0;
+  investYears.forEach(y => {
+    const price = s.prices[y];
+    if (price) { dcaShares += perYear / price; dcaInvested += perYear; }
+  });
+  const dcaValue = dcaShares * currentPrice;
+ 
+  const lumpInvested = dcaInvested;
+  const lumpShares = lumpInvested / s.prices[startYear];
+  const lumpValue = lumpShares * currentPrice;
+ 
+  const dcaGain = dcaValue - dcaInvested, dcaGainPct = (dcaGain / dcaInvested) * 100;
+  const lumpGain = lumpValue - lumpInvested, lumpGainPct = (lumpGain / lumpInvested) * 100;
+  const winner = dcaValue >= lumpValue ? "Drip-feeding" : "Lump sum";
+ 
+  resultEl.innerHTML = `
+    <div class="whatif-controls" style="margin-bottom:0; gap:32px;">
+      <div>
+        <div class="wi-headline">Drip-feeding $${perYear.toLocaleString()}/yr into <span style="color:${s.color}">${ticker}</span>, $${dcaInvested.toLocaleString()} total invested</div>
+        <div class="wi-value">$${dcaValue.toLocaleString(undefined,{maximumFractionDigits:0})}</div>
+        <div class="wi-gain ${dcaGain>=0?"up":"down"}">${dcaGain>=0?"+":"-"}$${Math.abs(dcaGain).toLocaleString(undefined,{maximumFractionDigits:0})} (${fmtPct(dcaGainPct)})</div>
+      </div>
+      <div>
+        <div class="wi-headline">Same $${lumpInvested.toLocaleString()} invested all at once in ${startYear}</div>
+        <div class="wi-value">$${lumpValue.toLocaleString(undefined,{maximumFractionDigits:0})}</div>
+        <div class="wi-gain ${lumpGain>=0?"up":"down"}">${lumpGain>=0?"+":"-"}$${Math.abs(lumpGain).toLocaleString(undefined,{maximumFractionDigits:0})} (${fmtPct(lumpGainPct)})</div>
+      </div>
+    </div>
+    <div class="spark-caption" style="margin-top:14px;">${winner} came out ahead here by $${Math.abs(dcaValue-lumpValue).toLocaleString(undefined,{maximumFractionDigits:0})} · ${live ? "using today's live price" : "using the Jul 2026 snapshot"}</div>`;
+}
+ 
+/* ---------------------------------------------------------------------
+   RENDER: goal calculator (reverse compounding)
+--------------------------------------------------------------------- */
+function initGoal() {
+  document.getElementById("goalTicker").innerHTML = ENRICHED.map(s => `<option value="${s.ticker}" ${s.ticker==="AAPL"?"selected":""}>${s.ticker} — ${s.name}</option>`).join("");
+  ["goalTarget","goalTicker","goalYears"].forEach(id => document.getElementById(id).addEventListener("input", renderGoal));
+  renderGoal();
+}
+ 
+function renderGoal() {
+  const targetRaw = parseFloat(document.getElementById("goalTarget").value);
+  const target = Number.isFinite(targetRaw) && targetRaw > 0 ? targetRaw : 0;
+  const ticker = document.getElementById("goalTicker").value;
+  const yearsRaw = parseInt(document.getElementById("goalYears").value, 10);
+  const years = Number.isFinite(yearsRaw) && yearsRaw > 0 ? yearsRaw : 0;
+  const s = ENRICHED.find(e => e.ticker === ticker);
+  const resultEl = document.getElementById("goalResult");
+ 
+  if (!s || !target || !years) {
+    resultEl.innerHTML = `<div class="wi-headline">Enter a target amount and timeframe.</div>`;
+    return;
+  }
+ 
+  const growthMultiple = Math.pow(1 + s.cagr10 / 100, years);
+  const needed = target / growthMultiple;
+ 
+  resultEl.innerHTML = `
+    <div class="wi-headline">If <span style="color:${s.color}">${ticker}</span>'s historical ${fmtPct(s.cagr10)} annual CAGR held for ${years} more years, you'd need to invest today</div>
+    <div class="wi-value">$${needed.toLocaleString(undefined,{maximumFractionDigits:0})}</div>
+    <div class="wi-gain up">to reach $${target.toLocaleString(undefined,{maximumFractionDigits:0})} — a ${growthMultiple.toFixed(1)}x multiple</div>
+    <div class="spark-caption" style="margin-top:10px;">This assumes the past 10-year CAGR repeats exactly, which is a big assumption — high-growth stocks like this rarely sustain the same rate indefinitely. Purely illustrative.</div>`;
+}
+ 
+/* ---------------------------------------------------------------------
+   INIT
+--------------------------------------------------------------------- */
+initWhatIf();
+initPortfolio();
+renderPortfolio();
+initDCA();
+initGoal();
+loadLivePrices();
+</script>
+</body>
+</html>
+ 
