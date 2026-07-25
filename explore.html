@@ -128,7 +128,7 @@
  
 <footer>
   <div class="wrap foot-grid">
-    <div><strong style="color:var(--text)">Methodology.</strong> Thirty large, widely-held US companies were selected by hand to span major sectors — a curated sample, not the full market. Historical prices are annual closes; "10-yr CAGR" runs 2015 close → 2025 close; "volatility" is the standard deviation of annual returns 2016–2025. The July 2026 snapshot was retrieved from Macrotrends. End-of-day closing prices, when available, come from Alpha Vantage via an automated job that runs after market close each weekday (Alpha Vantage's free tier doesn't offer intraday or real-time data) — see <span class="mono">data/prices.json</span> for today's snapshot, <span class="mono">data/history.json</span> for the running day-by-day log this page has collected since going live, and the "Update stock prices" GitHub Action in this repo.</div>
+    <div><strong style="color:var(--text)">Methodology.</strong> Thirty large, widely-held US companies were selected by hand to span major sectors — a curated sample, not the full market — plus SPY (an S&P 500 index ETF) included as a benchmark, so you can compare any individual stock against just owning the whole market. Historical prices are annual closes; "10-yr CAGR" runs 2015 close → 2025 close; "volatility" is the standard deviation of annual returns 2016–2025. The July 2026 snapshot was retrieved from Macrotrends. End-of-day closing prices, when available, come from Alpha Vantage via an automated job that runs after market close each weekday (Alpha Vantage's free tier doesn't offer intraday or real-time data) — see <span class="mono">data/prices.json</span> for today's snapshot, <span class="mono">data/history.json</span> for the running day-by-day log this page has collected since going live, and the "Update stock prices" GitHub Action in this repo.</div>
     <div><strong style="color:var(--text)">Not financial advice.</strong> Everything here describes what already happened. Past performance is not indicative of future results. High historical growth (NVDA, TSLA) came with equally large drawdowns. Consider your own goals and risk tolerance, and speak with a licensed financial advisor before making investment decisions.</div>
   </div>
 </footer>
@@ -445,6 +445,7 @@ loadLivePrices();
 </script>
 </body>
 </html>
+ 
  
  
  
