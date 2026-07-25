@@ -96,6 +96,9 @@ const STOCKS = [
   { ticker:"BRK.B", name:"Berkshire Hathaway", sector:"Finance", industry:"Conglomerate", marketCap:1100, color:"#A3E635",
     blurb:"Warren Buffett's conglomerate — insurance, railroads, energy, and a massive stock portfolio. The steadiest compounder in this set alongside KO, with only one down year (2015) in the entire decade.",
     prices:{2015:132.04,2016:162.98,2017:198.22,2018:204.18,2019:226.50,2020:231.87,2021:299.00,2022:308.90,2023:356.66,2024:453.28,2025:502.65,2026:495.00}},
+  { ticker:"SPY", name:"S&P 500 ETF", sector:"Index Fund", industry:"Broad Market ETF", marketCap:660, color:"#CBD5E1",
+    blurb:"Not a company — the market itself. This tracks the S&P 500, so it's the benchmark every stock above should be measured against: did picking that company actually beat just owning the whole market?",
+    prices:{2015:172.79,2016:193.52,2017:235.52,2018:224.76,2019:294.94,2020:349.00,2021:449.27,2022:367.61,2023:463.84,2024:579.27,2025:681.92,2026:747.47}},
 ];
 const YEARS = [2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025,2026];
  
@@ -178,4 +181,5 @@ async function loadLivePrices() {
   if (typeof renderPortfolio === "function" && document.getElementById("pfResult")) renderPortfolio();
   if (typeof renderDCA === "function" && document.getElementById("dcaResult") && document.getElementById("dcaTicker").options.length) renderDCA();
 }
+ 
  
