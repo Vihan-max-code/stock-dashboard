@@ -8,7 +8,21 @@
     --teal: #2DD4BF;
     --rust: #E4693C;
     --gold: #D4A857;
+    --tape-bg: #0D1526;
   }
+  html.light {
+    --bg: #F7F6F2;
+    --surface: #FFFFFF;
+    --surface2: #F0EFE9;
+    --border: rgba(11,17,32,0.10);
+    --text: #16181D;
+    --text-dim: #5B6472;
+    --teal: #0F9C89;
+    --rust: #C24A26;
+    --gold: #A9791F;
+    --tape-bg: #EFEEE7;
+  }
+  html, body { transition: background 0.2s ease, color 0.2s ease; }
   * { box-sizing: border-box; }
   body {
     background: var(--bg); color: var(--text);
@@ -17,7 +31,7 @@
   .mono { font-family: 'IBM Plex Mono', monospace; }
  
   /* Ticker tape */
-  .tape-outer { overflow: hidden; border-bottom: 1px solid var(--border); background: #0D1526; white-space: nowrap; padding: 10px 0; }
+  .tape-outer { overflow: hidden; border-bottom: 1px solid var(--border); background: var(--tape-bg); white-space: nowrap; padding: 10px 0; }
   .tape-track { display: inline-flex; animation: scrollTape 46s linear infinite; }
   @keyframes scrollTape { from { transform: translateX(0); } to { transform: translateX(-50%); } }
   .tape-item { display: inline-flex; align-items: center; gap: 8px; padding: 0 18px; font-family: 'IBM Plex Mono', monospace; font-size: 13px; letter-spacing: 0.02em; }
@@ -185,4 +199,45 @@
 }
 .site-nav-links a:hover { color: var(--text); background: var(--surface2); }
 .site-nav-links a.active { color: var(--bg); background: var(--teal); font-weight: 600; }
+ 
+.theme-toggle-btn {
+  margin-left: auto;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 12px;
+  color: var(--text-dim);
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 7px 14px;
+  cursor: pointer;
+  transition: color 0.15s, background 0.15s;
+}
+.theme-toggle-btn:hover { color: var(--text); background: var(--border); }
+ 
+/* Watchlist star */
+.star-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  padding: 2px 6px;
+  color: var(--text-dim);
+  transition: color 0.15s, transform 0.1s;
+}
+.star-btn:hover { transform: scale(1.15); }
+.star-btn.active { color: var(--gold); }
+.watchlist-filter-btn {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 12.5px;
+  color: var(--text-dim);
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 8px 14px;
+  cursor: pointer;
+  white-space: nowrap;
+  align-self: flex-end;
+}
+.watchlist-filter-btn.active { color: var(--bg); background: var(--gold); border-color: transparent; font-weight: 600; }
  
