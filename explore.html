@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script>if(localStorage.getItem("sd_theme")==="light"){document.documentElement.classList.add("light");}</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>A Decade on Wall Street — Explore</title>
@@ -18,6 +19,7 @@
       <a href="explore.html" class="active">Explore</a>
       <a href="calculators.html">Calculators</a>
     </div>
+    <button id="themeToggle" class="theme-toggle-btn">☀ Light</button>
   </div>
 </nav>
  
@@ -64,22 +66,25 @@
     <div class="section-head">
       <div>
         <h2 class="section-title">The screener</h2>
-        <div class="section-sub">Ranked by historical 10-year CAGR — describes the past, not a forecast. Click any row to open its profile below.</div>
+        <div class="section-sub">Ranked by historical 10-year CAGR — describes the past, not a forecast. Click any row to open its profile below. ★ a row to add it to your watchlist (saved in this browser only).</div>
       </div>
     </div>
     <div class="whatif-controls" style="margin-bottom:12px;">
       <label style="flex:1; min-width:200px;">Search
         <input type="text" id="screenerSearch" placeholder="Ticker, name, or sector…" style="width:100%;">
       </label>
+      <button id="watchlistFilterBtn" class="watchlist-filter-btn">★ Watchlist only</button>
       <button id="exportCsvBtn" class="pill" style="cursor:pointer; border:none; padding:9px 16px; align-self:flex-end;">⬇ Export CSV</button>
     </div>
     <div class="chart-card" style="padding:0; overflow-x:auto;">
       <table class="screener">
         <thead>
           <tr>
+            <th></th>
             <th data-key="ticker">Company</th>
             <th data-key="sector">Sector</th>
             <th data-key="cagr10" style="text-align:right">10-yr CAGR</th>
+            <th data-key="totalReturnCagr" style="text-align:right" title="Approximate — assumes the average historical dividend yield was reinvested annually">Total Return (incl. div, approx.)</th>
             <th data-key="vol" style="text-align:right">Volatility</th>
             <th data-key="marketCap" style="text-align:right">Market Cap</th>
           </tr>
@@ -248,12 +253,17 @@ function renderCorrMatrix() {
 --------------------------------------------------------------------- */
 let sortKey = "cagr10", sortDir = "desc";
 let screenerQuery = "";
+let watchlistOnly = false;
  
 function filteredSortedRows() {
   const q = screenerQuery.trim().toLowerCase();
-  const filtered = q
+  let filtered = q
     ? ENRICHED.filter(s => s.ticker.toLowerCase().includes(q) || s.name.toLowerCase().includes(q) || s.sector.toLowerCase().includes(q))
     : [...ENRICHED];
+  if (watchlistOnly) {
+    const wl = getWatchlist();
+    filtered = filtered.filter(s => wl.has(s.ticker));
+  }
   return filtered.sort((a,b) => {
     const va=a[sortKey], vb=b[sortKey];
     const cmp = typeof va === "string" ? va.localeCompare(vb) : va-vb;
@@ -263,18 +273,31 @@ function filteredSortedRows() {
  
 function renderScreener() {
   const rows = filteredSortedRows();
+  const wl = getWatchlist();
   document.getElementById("screenerBody").innerHTML = rows.length
     ? rows.map(s => `
     <tr class="row" data-ticker="${s.ticker}">
+      <td><button class="star-btn ${wl.has(s.ticker)?"active":""}" data-star="${s.ticker}" title="${wl.has(s.ticker)?"Remove from":"Add to"} watchlist">${wl.has(s.ticker)?"\u2605":"\u2606"}</button></td>
       <td><div class="row-ticker" style="color:${s.color}">${s.ticker}</div><div class="row-name">${s.name}</div></td>
       <td><span class="sector-tag">${s.sector}</span></td>
       <td class="cell-num ${s.cagr10>=0?"up":"down"}">${fmtPct(s.cagr10)}</td>
+      <td class="cell-num ${s.totalReturnCagr>=0?"up":"down"}">${fmtPct(s.totalReturnCagr)}</td>
       <td class="cell-num">${s.vol.toFixed(0)} pts</td>
       <td class="cell-num">$${s.marketCap.toLocaleString()}B</td>
     </tr>`).join("")
-    : `<tr><td colspan="5" style="text-align:center; padding:24px; color:var(--text-dim);">No companies match "${screenerQuery}"</td></tr>`;
+    : `<tr><td colspan="7" style="text-align:center; padding:24px; color:var(--text-dim);">${watchlistOnly ? "Your watchlist is empty \u2014 star a row to add it." : `No companies match "${screenerQuery}"`}</td></tr>`;
   document.querySelectorAll("tr.row").forEach(tr => {
-    tr.onclick = () => { selectedTicker = tr.dataset.ticker; renderProfile(); document.getElementById("tickerPills").scrollIntoView({behavior:"smooth", block:"center"}); };
+    tr.onclick = (e) => {
+      if (e.target.closest(".star-btn")) return;
+      selectedTicker = tr.dataset.ticker; renderProfile(); document.getElementById("tickerPills").scrollIntoView({behavior:"smooth", block:"center"});
+    };
+  });
+  document.querySelectorAll(".star-btn").forEach(btn => {
+    btn.onclick = (e) => {
+      e.stopPropagation();
+      toggleWatchlist(btn.dataset.star);
+      renderScreener();
+    };
   });
 }
  
@@ -283,9 +306,15 @@ document.getElementById("screenerSearch").addEventListener("input", (e) => {
   renderScreener();
 });
  
+document.getElementById("watchlistFilterBtn").addEventListener("click", (e) => {
+  watchlistOnly = !watchlistOnly;
+  e.target.classList.toggle("active", watchlistOnly);
+  renderScreener();
+});
+ 
 /* ---------------------------------------------------------------------
    CSV export — exports whatever the screener is currently showing
-   (respects the active search filter and sort order)
+   (respects the active search filter, watchlist filter, and sort order)
 --------------------------------------------------------------------- */
 function toCsvValue(v) {
   const s = String(v);
@@ -294,10 +323,10 @@ function toCsvValue(v) {
  
 function exportScreenerCsv() {
   const rows = filteredSortedRows();
-  const header = ["Ticker", "Name", "Sector", "Industry", "10yr CAGR %", "Volatility (pts)", "Market Cap ($B)"];
+  const header = ["Ticker", "Name", "Sector", "Industry", "10yr CAGR %", "Total Return incl. div (approx) %", "Volatility (pts)", "Market Cap ($B)"];
   const lines = [header.map(toCsvValue).join(",")];
   rows.forEach(s => {
-    lines.push([s.ticker, s.name, s.sector, s.industry, s.cagr10.toFixed(2), s.vol.toFixed(1), s.marketCap].map(toCsvValue).join(","));
+    lines.push([s.ticker, s.name, s.sector, s.industry, s.cagr10.toFixed(2), s.totalReturnCagr.toFixed(2), s.vol.toFixed(1), s.marketCap].map(toCsvValue).join(","));
   });
   const csv = lines.join("\n");
   const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
@@ -379,26 +408,28 @@ function renderProfile() {
     svg += `<text x="${cx}" y="${H-8}" fill="#93A0B8" font-size="11" font-family="IBM Plex Mono, monospace" text-anchor="middle">${2016+i}</text>`;
   });
   document.getElementById("returnsChart").innerHTML = svg;
- 
   const live = liveQuotes[s.ticker];
+  const isWatched = isWatchlisted(s.ticker);
   document.getElementById("profileCard").innerHTML = `
-    <h3 class="dd-name">${s.name} <span style="color:${s.color}">· ${s.ticker}</span></h3>
-    <div class="dd-sub">${s.sector} — ${s.industry}</div>
+    <h3 class="dd-name">${s.name} <span style="color:${s.color}">\u00b7 ${s.ticker}</span> <button id="profileStarBtn" class="star-btn ${isWatched?"active":""}" title="${isWatched?"Remove from":"Add to"} watchlist" style="vertical-align:middle;">${isWatched?"\u2605":"\u2606"}</button></h3>
+    <div class="dd-sub">${s.sector} \u2014 ${s.industry}</div>
     <p class="dd-blurb">${s.blurb}</p>
     <div class="dd-stats">
       <div><div class="dd-stat-label">10-yr CAGR</div><div class="dd-stat-value">${fmtPct(s.cagr10)}</div></div>
+      <div><div class="dd-stat-label" title="Approximate \u2014 assumes the ~${s.divYield}% average yield was reinvested annually">Total return (incl. div, approx.)</div><div class="dd-stat-value">${fmtPct(s.totalReturnCagr)}</div></div>
       <div><div class="dd-stat-label">Volatility</div><div class="dd-stat-value">${s.vol.toFixed(0)} pts</div></div>
       <div>
-        <div class="dd-stat-label">${live ? '<span style="color:var(--teal)">● Latest close</span>' : "Current price (Jul 2026 snapshot)"}</div>
+        <div class="dd-stat-label">${live ? '<span style="color:var(--teal)">\u25cf Latest close</span>' : "Current price (Jul 2026 snapshot)"}</div>
         <div class="dd-stat-value">$${(live ? live.price : s.prices[2026]).toFixed(2)}</div>
         ${live && live.changePercent!=null ? `<div class="dd-stat-delta" style="color:${live.changePercent>=0?'var(--teal)':'var(--rust)'}">${fmtPct(live.changePercent)} today</div>` : ""}
       </div>
       <div><div class="dd-stat-label">Market cap</div><div class="dd-stat-value">$${s.marketCap.toLocaleString()}B</div></div>
     </div>
     <div class="spark-section">
-      <div class="dd-stat-label" style="margin-bottom:8px;">Live tracking — since we started logging</div>
+      <div class="dd-stat-label" style="margin-bottom:8px;">Live tracking \u2014 since we started logging</div>
       ${buildSparkline(s.ticker)}
     </div>`;
+  document.getElementById("profileStarBtn").onclick = () => { toggleWatchlist(s.ticker); renderProfile(); renderScreener(); };
 }
  
 /* ---------------------------------------------------------------------
@@ -441,10 +472,12 @@ renderDrawdowns();
 if (urlParams.get("ticker")) {
   setTimeout(() => document.getElementById("tickerPills").scrollIntoView({behavior:"smooth", block:"center"}), 300);
 }
+initThemeToggle();
 loadLivePrices();
 </script>
 </body>
 </html>
+ 
  
  
  
