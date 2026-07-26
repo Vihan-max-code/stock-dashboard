@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script>if(localStorage.getItem("sd_theme")==="light"){document.documentElement.classList.add("light");}</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>A Decade on Wall Street — Calculators</title>
@@ -18,6 +19,7 @@
       <a href="explore.html">Explore</a>
       <a href="calculators.html" class="active">Calculators</a>
     </div>
+    <button id="themeToggle" class="theme-toggle-btn">☀ Light</button>
   </div>
 </nav>
  
@@ -386,9 +388,11 @@ initPortfolio();
 renderPortfolio();
 initDCA();
 initGoal();
+initThemeToggle();
 loadLivePrices();
 </script>
 </body>
 </html>
+ 
  
  
