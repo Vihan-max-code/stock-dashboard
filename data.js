@@ -430,4 +430,5 @@ function initAssistant() {
   };
 }
  
+ 
 Notifications are turned off for Claude. Enable them in System Settings to get alerts when Claude finishes a task.
