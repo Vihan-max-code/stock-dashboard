@@ -299,14 +299,69 @@ function stockLine(s) {
   return `<strong style="color:${s.color}">${s.ticker}</strong> (${s.name}): ${fmtPct(s.cagr10)} price CAGR, ${fmtPct(s.totalReturnCagr)} incl. dividends, ${s.vol.toFixed(0)} pts volatility`;
 }
  
+let assistantLastTicker = null;
+ 
+const SECTOR_ALIASES = {
+  tech: "Technology", technology: "Technology",
+  finance: "Finance", financial: "Finance", banks: "Finance", banking: "Finance",
+  healthcare: "Healthcare", health: "Healthcare", pharma: "Healthcare",
+  energy: "Energy", oil: "Energy",
+  retail: "Retail",
+  "consumer staples": "Consumer Staples", staples: "Consumer Staples",
+  "consumer discretionary": "Consumer Discretionary", discretionary: "Consumer Discretionary",
+  industrials: "Industrials", industrial: "Industrials",
+  utilities: "Utilities", utility: "Utilities",
+  materials: "Materials",
+  "real estate": "Real Estate", reit: "Real Estate", reits: "Real Estate",
+  "communication services": "Communication Services", communications: "Communication Services", media: "Communication Services",
+  automotive: "Automotive", auto: "Automotive", cars: "Automotive",
+  "index fund": "Index Fund", etf: "Index Fund", benchmark: "Index Fund",
+};
+ 
+function findSectorInText(lower) {
+  for (const alias of Object.keys(SECTOR_ALIASES).sort((a,b)=>b.length-a.length)) {
+    if (lower.includes(alias)) return SECTOR_ALIASES[alias];
+  }
+  return null;
+}
+ 
 function answerQuestion(raw) {
   const text = raw.trim();
   const lower = text.toLowerCase();
-  if (!text) return "Ask me something about the 30 companies (or SPY) tracked on this site — like a ticker's return, a comparison, or a what-if.";
+  if (!text) return "Ask me something about the 30 companies (or SPY) tracked on this site \u2014 like a ticker's return, a comparison, or a what-if.";
  
-  const tickers = findTickersInText(text);
+  let tickers = findTickersInText(text);
   const amount = extractDollarAmount(text);
   const year = extractYear(text);
+  const isFollowUp = /\bit\b|\bits\b|\bthat\b|\bthat one\b|\bwhat about\b/.test(lower);
+ 
+  // Follow-up memory: if no ticker was mentioned but the question
+  // explicitly reads like a follow-up ("it", "its", "that one", "what
+  // about"), reuse the last ticker discussed. Deliberately NOT based on
+  // question length alone — short questions like "how is healthcare
+  // doing" are legitimate standalone questions, not follow-ups.
+  if (tickers.length === 0 && assistantLastTicker && isFollowUp) {
+    tickers = [assistantLastTicker];
+  }
+  if (tickers.length === 1) assistantLastTicker = tickers[0];
+ 
+  // --- Watchlist summary ---
+  if (/my watchlist|watch list|starred/.test(lower)) {
+    const wl = [...getWatchlist()];
+    if (!wl.length) return `Your watchlist is empty. Star any ticker on the <a href="explore.html">Explore</a> screener or a profile page to add one.`;
+    const rows = wl.map(t => ENRICHED.find(s => s.ticker === t)).filter(Boolean);
+    return `Your watchlist (${rows.length}): <br>` + rows.map(s => `\u2022 ${stockLine(s)}`).join("<br>");
+  }
+ 
+  // --- Beat-the-market: "did X beat the market", "did X beat SPY", "X vs the market" ---
+  if (tickers.length === 1 && /beat|outperform/.test(lower) && /market|spy|s&p|index/.test(lower)) {
+    const s = tickers[0];
+    const spy = ENRICHED.find(e => e.ticker === "SPY");
+    if (s.ticker === "SPY") return `SPY *is* the market benchmark here, so this one's trivially true \u2014 it's the S&P 500 itself.`;
+    const diff = s.cagr10 - spy.cagr10;
+    const beat = diff > 0;
+    return `${beat ? "Yes" : "No"} \u2014 <strong style="color:${s.color}">${s.ticker}</strong>'s ${fmtPct(s.cagr10)} CAGR ${beat ? "beat" : "lagged"} SPY's ${fmtPct(spy.cagr10)} by ${Math.abs(diff).toFixed(1)} points over 2015\u20132025. ${s.ticker}'s volatility was ${s.vol.toFixed(0)} pts vs SPY's ${spy.vol.toFixed(0)} pts, so ${beat ? "that outperformance" : "even that underperformance"} came with ${s.vol > spy.vol ? "more" : "less"} risk.`;
+  }
  
   // --- Comparison: "compare X vs Y", "X vs Y", "X or Y" ---
   if (tickers.length >= 2 && (/\bvs\.?\b|\bversus\b|compare|or /.test(lower))) {
@@ -348,7 +403,7 @@ function answerQuestion(raw) {
     const s = tickers[0];
     const dd = assistantMaxDrawdown(s.prices);
     const live = liveQuotes[s.ticker];
-    return `${stockLine(s)}. Worst drawdown: ${dd.pct.toFixed(1)}% (${dd.fromYear}–${dd.toYear}). ${live ? `Latest close: $${live.price.toFixed(2)}.` : ""} <a href="explore.html?ticker=${s.ticker}">See its full profile →</a>`;
+    return `${stockLine(s)}. Worst drawdown: ${dd.pct.toFixed(1)}% (${dd.fromYear}\u2013${dd.toYear}). ${live ? `Latest close: $${live.price.toFixed(2)}.` : ""} <a href="explore.html?ticker=${s.ticker}">See its full profile \u2192</a>`;
   }
  
   // --- Superlatives across the whole dataset ---
@@ -373,15 +428,23 @@ function answerQuestion(raw) {
     return `The worst drawdown belongs to <strong style="color:${withDD.s.color}">${withDD.s.ticker}</strong>: ${withDD.dd.pct.toFixed(1)}%, from ${withDD.dd.fromYear} to ${withDD.dd.toYear}.`;
   }
  
-  // --- Sector questions ---
+  // --- Sector questions: a specific sector, or the overall best ---
+  const namedSector = findSectorInText(lower);
+  if (namedSector) {
+    const group = SECTOR_GROUPS.find(g => g.sector === namedSector);
+    if (group) {
+      const rank = SECTOR_GROUPS.findIndex(g => g.sector === namedSector) + 1;
+      return `<strong>${group.sector}</strong> averages ${fmtPct(group.avgCagr)} 10-yr CAGR across ${group.tickers} \u2014 ranked #${rank} of ${SECTOR_GROUPS.length} sectors here.`;
+    }
+  }
   if (/sector/.test(lower)) {
     const best = SECTOR_GROUPS[0];
-    return `The strongest sector by average 10-yr CAGR is <strong>${best.sector}</strong> (${fmtPct(best.avgCagr)}), made up of ${best.tickers}. See the full breakdown on <a href="explore.html">Explore</a>.`;
+    return `The strongest sector by average 10-yr CAGR is <strong>${best.sector}</strong> (${fmtPct(best.avgCagr)}), made up of ${best.tickers}. Ask about a specific sector (e.g. "how is healthcare doing?") or see the full breakdown on <a href="explore.html">Explore</a>.`;
   }
  
   // --- Fallback ---
   return `I can only answer questions about the companies tracked here. Try things like:<br>
-    <em>"How did NVDA do?"</em> · <em>"Compare AAPL vs MSFT"</em> · <em>"What if I invested $1000 in KO in 2018?"</em> · <em>"Which stock is the most volatile?"</em> · <em>"What's the best sector?"</em>`;
+    <em>"How did NVDA do?"</em> \u00b7 <em>"Did AAPL beat the market?"</em> \u00b7 <em>"How is healthcare doing?"</em> \u00b7 <em>"Compare AAPL vs MSFT"</em> \u00b7 <em>"What if I invested $1000 in KO in 2018?"</em> \u00b7 <em>"How's my watchlist doing?"</em>`;
 }
  
 const WHATIF_YEARS_LIST = [2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025];
@@ -396,22 +459,60 @@ function initAssistant() {
   const messages = document.getElementById("assistantMessages");
   const form = document.getElementById("assistantForm");
   const input = document.getElementById("assistantInput");
+  const suggestBox = document.getElementById("assistantSuggest");
   if (!toggle || !panel || !messages || !form || !input) return;
  
-  const addMessage = (html, from) => {
+  const HISTORY_KEY = "sd_assistant_history";
+  const MAX_HISTORY = 40;
+ 
+  const loadHistory = () => {
+    try {
+      const raw = localStorage.getItem(HISTORY_KEY);
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
+  };
+  const saveHistory = (hist) => {
+    try {
+      localStorage.setItem(HISTORY_KEY, JSON.stringify(hist.slice(-MAX_HISTORY)));
+    } catch {
+      // ignore (private browsing, quota, etc.)
+    }
+  };
+ 
+  let history = loadHistory();
+ 
+  const renderMessage = (html, from) => {
     const div = document.createElement("div");
     div.className = `assistant-msg ${from}`;
     div.innerHTML = html;
     messages.appendChild(div);
-    messages.scrollTop = messages.scrollHeight;
   };
+ 
+  const addMessage = (html, from, persist = true) => {
+    renderMessage(html, from);
+    messages.scrollTop = messages.scrollHeight;
+    if (persist) {
+      history.push({ html, from });
+      saveHistory(history);
+    }
+  };
+ 
+  // Replay saved history on load, so the conversation survives page navigation.
+  if (history.length) {
+    history.forEach(m => renderMessage(m.html, m.from));
+    messages.scrollTop = messages.scrollHeight;
+  }
  
   let opened = false;
   toggle.onclick = () => {
     panel.classList.toggle("open");
     if (!opened) {
       opened = true;
-      addMessage("Hi — ask me anything about the companies tracked on this site. Try \u201cHow did NVDA do?\u201d or \u201cCompare AAPL vs MSFT\u201d.", "bot");
+      if (!history.length) {
+        addMessage("Hi \u2014 ask me anything about the companies tracked on this site. Try \u201cHow did NVDA do?\u201d or \u201cCompare AAPL vs MSFT\u201d.", "bot");
+      }
     }
   };
   document.getElementById("assistantClose").onclick = () => panel.classList.remove("open");
@@ -424,11 +525,38 @@ function initAssistant() {
     e.preventDefault();
     const q = input.value.trim();
     if (!q) return;
+    if (suggestBox) suggestBox.innerHTML = "";
     addMessage(q.replace(/</g,"&lt;"), "user");
     input.value = "";
     setTimeout(() => addMessage(answerQuestion(q), "bot"), 250);
   };
+ 
+  // --- Ticker autocomplete ---
+  if (suggestBox) {
+    const allNames = ENRICHED.map(s => ({ ticker: s.ticker, name: s.name, color: s.color }));
+ 
+    const closeSuggest = () => { suggestBox.innerHTML = ""; suggestBox.classList.remove("open"); };
+ 
+    input.addEventListener("input", () => {
+      const val = input.value;
+      const lastWordMatch = val.match(/([A-Za-z.]{2,})$/);
+      if (!lastWordMatch) { closeSuggest(); return; }
+      const frag = lastWordMatch[1].toLowerCase();
+      const matches = allNames.filter(s => s.ticker.toLowerCase().startsWith(frag) || s.name.toLowerCase().includes(frag)).slice(0, 5);
+      if (!matches.length) { closeSuggest(); return; }
+      suggestBox.innerHTML = matches.map(s => `<div class="assistant-suggest-item" data-ticker="${s.ticker}"><span style="color:${s.color}">${s.ticker}</span> \u00b7 ${s.name}</div>`).join("");
+      suggestBox.classList.add("open");
+      suggestBox.querySelectorAll(".assistant-suggest-item").forEach(item => {
+        item.onclick = () => {
+          input.value = input.value.replace(/([A-Za-z.]{2,})$/, item.dataset.ticker);
+          closeSuggest();
+          input.focus();
+        };
+      });
+    });
+ 
+    input.addEventListener("blur", () => setTimeout(closeSuggest, 150));
+    input.addEventListener("keydown", (e) => { if (e.key === "Escape") closeSuggest(); });
+  }
 }
  
- 
-
