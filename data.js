@@ -246,3 +246,188 @@ function initThemeToggle() {
   };
 }
  
+ 
+/* =======================================================================
+   ASK THE DATA — a rule-based Q&A assistant, not a real LLM.
+   Fully client-side, no API keys, no cost. It pattern-matches questions
+   against tickers, sectors, and metric keywords, then answers using the
+   same ENRICHED dataset and calculator math the rest of the site uses.
+   It can only ever discuss what's already in STOCKS — it doesn't know
+   anything else and doesn't make anything up.
+======================================================================= */
+ 
+function assistantMaxDrawdown(prices) {
+  let peakVal = prices[2015];
+  let worst = { pct: 0, fromYear: 2015, toYear: 2015 };
+  let peakYear = 2015;
+  for (const y of YEARS) {
+    const v = prices[y];
+    if (v == null) continue;
+    if (v > peakVal) { peakVal = v; peakYear = y; }
+    const dd = (v - peakVal) / peakVal * 100;
+    if (dd < worst.pct) worst = { pct: dd, fromYear: peakYear, toYear: y };
+  }
+  return worst;
+}
+ 
+function findTickersInText(text) {
+  const upper = text.toUpperCase();
+  const found = [];
+  ENRICHED.forEach(s => {
+    const tickerPattern = new RegExp(`(^|[^A-Z.])${s.ticker.replace(".", "\\.")}([^A-Z]|$)`);
+    const nameMatch = s.name.length > 3 && text.toLowerCase().includes(s.name.toLowerCase());
+    if (tickerPattern.test(upper) || nameMatch) found.push(s);
+  });
+  // de-dupe, keep order of first appearance
+  return [...new Map(found.map(s => [s.ticker, s])).values()];
+}
+ 
+function extractDollarAmount(text) {
+  const m = text.replace(/,/g, "").match(/\$?\s?(\d{2,7}(?:\.\d+)?)\s?(k)?/i);
+  if (!m) return null;
+  let n = parseFloat(m[1]);
+  if (m[2]) n *= 1000;
+  return n;
+}
+ 
+function extractYear(text) {
+  const m = text.match(/20(1[5-9]|2[0-6])/);
+  return m ? parseInt(m[0], 10) : null;
+}
+ 
+function stockLine(s) {
+  return `<strong style="color:${s.color}">${s.ticker}</strong> (${s.name}): ${fmtPct(s.cagr10)} price CAGR, ${fmtPct(s.totalReturnCagr)} incl. dividends, ${s.vol.toFixed(0)} pts volatility`;
+}
+ 
+function answerQuestion(raw) {
+  const text = raw.trim();
+  const lower = text.toLowerCase();
+  if (!text) return "Ask me something about the 30 companies (or SPY) tracked on this site — like a ticker's return, a comparison, or a what-if.";
+ 
+  const tickers = findTickersInText(text);
+  const amount = extractDollarAmount(text);
+  const year = extractYear(text);
+ 
+  // --- Comparison: "compare X vs Y", "X vs Y", "X or Y" ---
+  if (tickers.length >= 2 && (/\bvs\.?\b|\bversus\b|compare|or /.test(lower))) {
+    const [a, b] = tickers;
+    const ddA = assistantMaxDrawdown(a.prices), ddB = assistantMaxDrawdown(b.prices);
+    return `<strong>${a.ticker} vs ${b.ticker}</strong><br>
+      ${stockLine(a)}, worst drawdown ${ddA.pct.toFixed(1)}%<br>
+      ${stockLine(b)}, worst drawdown ${ddB.pct.toFixed(1)}%<br>
+      ${a.cagr10 > b.cagr10 ? a.ticker : b.ticker} had the better historical CAGR; ${a.vol < b.vol ? a.ticker : b.ticker} was steadier.`;
+  }
+ 
+  // --- What-if: "$1000 in NVDA since 2015", "invest 5000 in AAPL 2018" ---
+  if (tickers.length === 1 && amount && (/\binvest|what if|put|worth/.test(lower))) {
+    const s = tickers[0];
+    const startYear = year && WHATIF_YEARS_LIST.includes(year) ? year : 2015;
+    const startPrice = s.prices[startYear];
+    const live = liveQuotes[s.ticker];
+    const currentPrice = live ? live.price : s.prices[2026];
+    const value = (amount / startPrice) * currentPrice;
+    const gain = value - amount;
+    return `$${amount.toLocaleString()} in <strong style="color:${s.color}">${s.ticker}</strong> since ${startYear} would be worth about <strong>$${value.toLocaleString(undefined,{maximumFractionDigits:0})}</strong> today (${gain>=0?"+":"-"}$${Math.abs(gain).toLocaleString(undefined,{maximumFractionDigits:0})}). Try the full calculator on the <a href="calculators.html">Calculators</a> page for more detail.`;
+  }
+ 
+  // --- Dividend / yield question about a specific ticker ---
+  if (tickers.length === 1 && /dividend|yield/.test(lower)) {
+    const s = tickers[0];
+    return `${s.ticker} has an approximate historical average dividend yield of ${s.divYield}%. Including that (assuming reinvestment), its estimated total return CAGR is ${fmtPct(s.totalReturnCagr)}, vs ${fmtPct(s.cagr10)} on price alone.`;
+  }
+ 
+  // --- Drawdown question about a specific ticker ---
+  if (tickers.length === 1 && /drawdown|crash|drop|fell|fall/.test(lower)) {
+    const s = tickers[0];
+    const dd = assistantMaxDrawdown(s.prices);
+    return `${s.ticker}'s worst peak-to-trough decline was ${dd.pct.toFixed(1)}%, from ${dd.fromYear} to ${dd.toYear}.`;
+  }
+ 
+  // --- Single ticker, general "how did X do" ---
+  if (tickers.length === 1) {
+    const s = tickers[0];
+    const dd = assistantMaxDrawdown(s.prices);
+    const live = liveQuotes[s.ticker];
+    return `${stockLine(s)}. Worst drawdown: ${dd.pct.toFixed(1)}% (${dd.fromYear}–${dd.toYear}). ${live ? `Latest close: $${live.price.toFixed(2)}.` : ""} <a href="explore.html?ticker=${s.ticker}">See its full profile →</a>`;
+  }
+ 
+  // --- Superlatives across the whole dataset ---
+  if (/best|top|highest/.test(lower) && /cagr|return|perform/.test(lower)) {
+    const best = ENRICHED.reduce((a,b)=>b.cagr10>a.cagr10?b:a);
+    return `The best 10-year CAGR is ${stockLine(best)}.`;
+  }
+  if (/worst|weakest|lowest/.test(lower) && /cagr|return|perform/.test(lower)) {
+    const worst = ENRICHED.reduce((a,b)=>b.cagr10<a.cagr10?b:a);
+    return `The weakest 10-year CAGR is ${stockLine(worst)}.`;
+  }
+  if (/most volatile|riskiest|most risky/.test(lower)) {
+    const v = ENRICHED.reduce((a,b)=>b.vol>a.vol?b:a);
+    return `The most volatile is ${stockLine(v)}.`;
+  }
+  if (/least volatile|steadiest|safest|most stable/.test(lower)) {
+    const v = ENRICHED.reduce((a,b)=>b.vol<a.vol?b:a);
+    return `The steadiest is ${stockLine(v)}.`;
+  }
+  if (/worst drawdown|biggest crash|biggest drop/.test(lower)) {
+    const withDD = ENRICHED.map(s => ({ s, dd: assistantMaxDrawdown(s.prices) })).sort((a,b)=>a.dd.pct-b.dd.pct)[0];
+    return `The worst drawdown belongs to <strong style="color:${withDD.s.color}">${withDD.s.ticker}</strong>: ${withDD.dd.pct.toFixed(1)}%, from ${withDD.dd.fromYear} to ${withDD.dd.toYear}.`;
+  }
+ 
+  // --- Sector questions ---
+  if (/sector/.test(lower)) {
+    const best = SECTOR_GROUPS[0];
+    return `The strongest sector by average 10-yr CAGR is <strong>${best.sector}</strong> (${fmtPct(best.avgCagr)}), made up of ${best.tickers}. See the full breakdown on <a href="explore.html">Explore</a>.`;
+  }
+ 
+  // --- Fallback ---
+  return `I can only answer questions about the companies tracked here. Try things like:<br>
+    <em>"How did NVDA do?"</em> · <em>"Compare AAPL vs MSFT"</em> · <em>"What if I invested $1000 in KO in 2018?"</em> · <em>"Which stock is the most volatile?"</em> · <em>"What's the best sector?"</em>`;
+}
+ 
+const WHATIF_YEARS_LIST = [2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025];
+ 
+/* ---------------------------------------------------------------------
+   Assistant widget wiring — shared across all pages. Renders nothing
+   if the page doesn't have the widget markup.
+--------------------------------------------------------------------- */
+function initAssistant() {
+  const toggle = document.getElementById("assistantToggle");
+  const panel = document.getElementById("assistantPanel");
+  const messages = document.getElementById("assistantMessages");
+  const form = document.getElementById("assistantForm");
+  const input = document.getElementById("assistantInput");
+  if (!toggle || !panel || !messages || !form || !input) return;
+ 
+  const addMessage = (html, from) => {
+    const div = document.createElement("div");
+    div.className = `assistant-msg ${from}`;
+    div.innerHTML = html;
+    messages.appendChild(div);
+    messages.scrollTop = messages.scrollHeight;
+  };
+ 
+  let opened = false;
+  toggle.onclick = () => {
+    panel.classList.toggle("open");
+    if (!opened) {
+      opened = true;
+      addMessage("Hi — ask me anything about the companies tracked on this site. Try \u201cHow did NVDA do?\u201d or \u201cCompare AAPL vs MSFT\u201d.", "bot");
+    }
+  };
+  document.getElementById("assistantClose").onclick = () => panel.classList.remove("open");
+ 
+  document.querySelectorAll(".assistant-chip").forEach(chip => {
+    chip.onclick = () => { input.value = chip.textContent; form.requestSubmit(); };
+  });
+ 
+  form.onsubmit = (e) => {
+    e.preventDefault();
+    const q = input.value.trim();
+    if (!q) return;
+    addMessage(q.replace(/</g,"&lt;"), "user");
+    input.value = "";
+    setTimeout(() => addMessage(answerQuestion(q), "bot"), 250);
+  };
+}
+ 
+Notifications are turned off for Claude. Enable them in System Settings to get alerts when Claude finishes a task.
