@@ -88,6 +88,30 @@
   </div>
 </footer>
  
+ 
+<button id="assistantToggle" class="assistant-toggle" title="Ask the data">💬</button>
+<div id="assistantPanel" class="assistant-panel">
+  <div class="assistant-header">
+    <div>
+      <div class="assistant-header-title">Ask the data</div>
+      <div class="assistant-header-sub">Rule-based · not a real AI · only knows this dataset</div>
+    </div>
+    <button id="assistantClose" class="assistant-close">✕</button>
+  </div>
+  <div id="assistantMessages" class="assistant-messages"></div>
+  <div class="assistant-chips">
+    <span class="assistant-chip">Best performer?</span>
+    <span class="assistant-chip">Most volatile?</span>
+    <span class="assistant-chip">Compare AAPL vs MSFT</span>
+    <span class="assistant-chip">Worst drawdown?</span>
+  </div>
+  <form id="assistantForm" class="assistant-form">
+    <input id="assistantInput" type="text" placeholder="Ask about a ticker, e.g. \"How did NVDA do?\"" autocomplete="off">
+    <button type="submit">Ask</button>
+  </form>
+  <div class="assistant-disclaimer">Answers come from historical data on this site, not real-time research or advice. Not a substitute for professional financial guidance.</div>
+</div>
+ 
 <script src="data.js"></script>
 <script>
 /* ---------------------------------------------------------------------
@@ -259,6 +283,7 @@ function renderGrowthChart() {
 renderStatRow();
 renderGrowthChart();
 initThemeToggle();
+initAssistant();
 loadLivePrices();
 </script>
 </body>
@@ -266,3 +291,5 @@ loadLivePrices();
  
  
  
+ 
+Notifications are turned off for Claude. Enable them in System Settings to get alerts when Claude finishes a task.
