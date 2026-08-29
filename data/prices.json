@@ -1,108 +1,105 @@
 {
-  "generatedAt": "2026-08-28T05:42:08.856Z",
+  "generatedAt": "2026-08-29T03:27:34.773Z",
   "quotes": {
     "AAPL": {
-      "price": 314.58,
-      "changePercent": 0.3605
+      "price": 319.7,
+      "changePercent": 1.6276
     },
     "MSFT": {
-      "price": 505.06,
-      "changePercent": 1.7507
+      "price": 513.53,
+      "changePercent": 1.677
     },
     "NVDA": {
-      "price": 227.98,
-      "changePercent": 8.738
+      "price": 217.55,
+      "changePercent": -4.575
     },
     "GOOGL": {
-      "price": 340.65,
-      "changePercent": -0.3947
+      "price": 346.59,
+      "changePercent": 1.7437
     },
     "AMZN": {
-      "price": 256.26,
-      "changePercent": -1.5445
+      "price": 266.43,
+      "changePercent": 3.9686
     },
     "META": {
-      "price": 571.1,
-      "changePercent": -0.8748
+      "price": 578.02,
+      "changePercent": 1.2117
     },
     "JPM": {
-      "price": 354.22,
-      "changePercent": -0.6396
+      "price": 357.62,
+      "changePercent": 0.9599
     },
     "UNH": {
-      "price": 395.05,
-      "changePercent": -1.4862
+      "price": 392.95,
+      "changePercent": -0.5316
     },
     "XOM": {
-      "price": 156.44,
-      "changePercent": -1.1063
+      "price": 156.71,
+      "changePercent": 0.1726
     },
     "TSLA": {
-      "price": 354.81,
-      "changePercent": 2.5996
+      "price": 348.75,
+      "changePercent": -1.708
     },
     "KO": {
-      "price": 89.06,
-      "changePercent": -1.1323
+      "price": 89.66,
+      "changePercent": 0.6737
     },
     "WMT": {
-      "price": 102.63,
-      "changePercent": -1.6389
+      "price": 103.09,
+      "changePercent": 0.4482
     },
     "V": {
-      "price": 379.66,
-      "changePercent": -1.1045
+      "price": 381.6,
+      "changePercent": 0.511
     },
     "BAC": {
-      "price": 61.17,
-      "changePercent": -1.7034
+      "price": 62.32,
+      "changePercent": 1.88
     },
     "LLY": {
-      "price": 1176.1,
-      "changePercent": -1.119
+      "price": 1174.61,
+      "changePercent": -0.1267
     },
     "PFE": {
-      "price": 28.02,
-      "changePercent": -0.9894
+      "price": 27.96,
+      "changePercent": -0.2141
     },
     "PG": {
-      "price": 143.14,
-      "changePercent": -1.2828
+      "price": 143.78,
+      "changePercent": 0.4471
     },
     "HD": {
-      "price": 328.61,
-      "changePercent": -1.8635
+      "price": 330.19,
+      "changePercent": 0.4808
     },
     "MCD": {
-      "price": 260.06,
-      "changePercent": -2.5737
+      "price": 265,
+      "changePercent": 1.8996
     },
     "DIS": {
-      "price": 106.82,
-      "changePercent": -2.5632
+      "price": 108.1,
+      "changePercent": 1.1983
     },
     "CAT": {
-      "price": 817,
-      "changePercent": -0.5998
+      "price": 800.25,
+      "changePercent": -2.0502
     },
     "NEE": {
-      "price": 83.47,
-      "changePercent": -0.8905
+      "price": 81.84,
+      "changePercent": -1.2062
     },
     "LIN": {
-      "price": 485.35,
-      "changePercent": -1.0156
+      "price": 489.51,
+      "changePercent": 0.8571
     },
     "AMT": {
-      "price": 174.16,
-      "changePercent": -0.8934
-    },
-    "AVGO": {
-      "price": 371.54,
-      "changePercent": 4.4855
+      "price": 176.23,
+      "changePercent": 1.1886
     }
   },
   "errors": {
+    "AVGO": "API message: We have detected your API key as ZDJJRBP3U89X9DCD and our standard API rate limit is 25 requests per day. Please subscribe to any of the premium plans at https://www.alphavantage.co/premium/ to instantly remove all daily rate limits.",
     "NFLX": "API message: We have detected your API key as ZDJJRBP3U89X9DCD and our standard API rate limit is 25 requests per day. Please subscribe to any of the premium plans at https://www.alphavantage.co/premium/ to instantly remove all daily rate limits.",
     "AMD": "API message: We have detected your API key as ZDJJRBP3U89X9DCD and our standard API rate limit is 25 requests per day. Please subscribe to any of the premium plans at https://www.alphavantage.co/premium/ to instantly remove all daily rate limits.",
     "COST": "API message: We have detected your API key as ZDJJRBP3U89X9DCD and our standard API rate limit is 25 requests per day. Please subscribe to any of the premium plans at https://www.alphavantage.co/premium/ to instantly remove all daily rate limits.",
